@@ -1,0 +1,23 @@
+{
+	"core": "WordPress/WordPress#6.8.2",
+	"phpVersion": "8.2",
+	"config": {
+		"DEV": true,
+		"WP_SITEURL": "http://host.docker.internal:8888",
+		"WP_HOME": "http://host.docker.internal:8888",
+		"WP_DEBUG": true,
+		"WP_DEBUG_DISPLAY": true
+	},
+	"lifecycleScripts": {
+		"afterStart": "mise run env-after-start"
+	},
+	"plugins": [
+		".",
+		"https://downloads.wordpress.org/plugin/kadence-blocks.zip",
+		"https://downloads.wordpress.org/plugin/polylang.zip",
+		"https://downloads.wordpress.org/plugin/seo-by-rank-math.zip",
+		"https://downloads.wordpress.org/plugin/secure-custom-fields.zip"
+	],
+	"themes": ["https://downloads.wordpress.org/theme/kadence.zip"],
+	"port": 8888
+}

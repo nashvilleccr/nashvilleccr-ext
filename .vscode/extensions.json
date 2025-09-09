@@ -1,0 +1,7 @@
+{
+	"recommendations": [
+		"tamasfe.even-better-toml",
+		"bmewburn.vscode-intelephense-client",
+		"ecmel.vscode-html-css"
+	]
+}

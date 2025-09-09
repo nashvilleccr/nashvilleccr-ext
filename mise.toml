@@ -1,0 +1,124 @@
+[tools]
+php = "8.2"
+node = "22"
+
+[env]
+
+_.path = ["./node_modules/.bin"]
+
+[tasks.install-deps]
+depends = ["install-js-deps", "install-php-deps"]
+
+[tasks.install-php-deps]
+sources = ["composer.json"]
+outputs = ["vendor/", "composer.lock"]
+run = "composer install"
+
+[tasks.install-js-deps]
+sources = ["package.json"]
+outputs = ["node_modules/", "pnpm-lock.yaml"]
+run = "pnpm install"
+
+[tasks.dev]
+depends = ["env-start", "scripts-start"]
+
+[tasks.start]
+depends = ["env-start", "scripts-build"]
+
+[tasks.stop]
+depends = ["env-stop"]
+
+[tasks.build]
+depends = ["scripts-build"]
+
+[tasks.clean]
+depends = ["clean-build", "clean-zip"]
+
+[tasks.format]
+depends = ["install-deps"]
+run = "wp-scripts format"
+
+[tasks.lint]
+depends = ["lint-css", "lint-js"]
+
+[tasks.lint-css]
+depends = ["install-deps"]
+run = "wp-scripts lint-style"
+
+[tasks.lint-js]
+depends = ["install-deps"]
+run = "wp-scripts lint-js"
+
+# // NOTE: Broken due to pnpm
+# [tasks.packages-update]
+# depends = ["install-deps"]
+# run = "wp-scripts packages-update"
+
+[tasks.build-zip]
+depends = ["build"]
+outputs = ["nashvilleccr-ext.zip"]
+run = "wp-scripts plugin-zip"
+
+[tasks.create-block]
+run = """
+cd src/blocks
+pnpx @wordpress/create-block@latest \
+    --no-plugin \
+    --variant dynamic \
+    --namespace=nashvilleccr \
+    --textdomain=nccr
+"""
+
+[tasks.scripts-build]
+depends = ["install-deps"]
+run = "wp-scripts build --webpack-copy-php --blocks-manifest"
+
+[tasks.scripts-start]
+depends = ["install-deps"]
+run = "wp-scripts start --webpack-copy-php --blocks-manifest"
+
+[tasks.env-start]
+run = """
+if [ -z \"$(docker ps -q)\" ];
+    then wp-env start
+fi
+"""
+
+[tasks.env-after-start]
+run = """\
+#!/bin/bash
+read -r -d '' script <<'EOF'
+wp theme activate kadence
+EOF
+wp-env run cli bash -c "$script"
+"""
+
+[tasks.env-restart]
+run = "wp-env start --update"
+
+[tasks.env-stop]
+run = "wp-env stop"
+
+[tasks.clean-build]
+run = "rm -rf build"
+
+[tasks.clean-zip]
+run = "rm -f nashvilleccr-ext.zip"
+
+[tasks.deploy]
+depends = ["activate-zip"]
+depends_post = ["clean-zip"]
+
+[tasks.activate-zip]
+depends = ["upload-zip"]
+run = """ssh -t ${SSH_USER}@${SSH_HOST} <<EOF
+#!/bin/bash
+cd ${REMOTE_WWW_DIR}
+wp plugin install --force ${REMOTE_TMP_DIR}/nashvilleccr-ext.zip
+rm ${REMOTE_TMP_DIR}/nashvilleccr-ext.zip
+EOF
+"""
+
+[tasks.upload-zip]
+depends = ["build-zip"]
+run = "scp nashvilleccr-ext.zip ${SSH_USER}@${SSH_HOST}:${REMOTE_TMP_DIR}/"
