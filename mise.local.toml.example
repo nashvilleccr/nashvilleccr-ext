@@ -1,0 +1,6 @@
+[env]
+SSH_USER = "username"
+SSH_HOST = "example.com"
+REMOTE_WWW_DIR = "/var/www"
+REMOTE_TMP_DIR = "/tmp"
+GOOGLE_API_KEY = "abcdefghijklmnopqrstuvwxyz1234567890ABC"

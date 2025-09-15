@@ -19,22 +19,26 @@ class Plugin {
 	static $blocks_manifest = __DIR__ . '/build/blocks-manifest.php';
 	static $render_blocks = [];
 
+	static function load() {
+		foreach (glob(self::$plugin_dir . "/includes/*.php") as $file) {
+			require $file;
+		}
+
+		RegisterFields::load();
+		
+		add_action('init', [self::class, 'init']);
+	}
+
 	static function init() {
 		if (!function_exists('get_field')) {
 			warn("Secure Custom Fields plugin required for this plugin to work.");
 			return;
 		}
 
-		foreach (glob(self::$plugin_dir . "/includes/*.php") as $file) {
-			require $file;
-		}
-
 		RegisterBlocks::init();
 		Performance::init();
 	}
 }
-
-add_action('init', [Plugin::class, 'init']);
 
 function notice($msg) {
 	trigger_error($msg, E_USER_NOTICE);
@@ -53,3 +57,5 @@ function debug($title, $data = true) {
 		echo "<pre><code>{$title} => " . json_encode($data) . '</code></pre>';
 	});
 }
+
+Plugin::load();

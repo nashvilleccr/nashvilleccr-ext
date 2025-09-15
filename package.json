@@ -4,21 +4,13 @@
 	"description": "Plugin to extend the site",
 	"author": "Michael LaCorte",
 	"license": "GPL-2.0-or-later",
-	"main": "build/index.js",
-	"scripts": {
-		"build": "wp-scripts build --webpack-copy-php --blocks-manifest",
-		"format": "wp-scripts format",
-		"lint:css": "wp-scripts lint-style",
-		"lint:js": "wp-scripts lint-js",
-		"packages-update": "wp-scripts packages-update",
-		"plugin-zip": "wp-scripts plugin-zip",
-		"start": "wp-scripts start --webpack-copy-php --blocks-manifest",
-		"env:start": "wp-env start",
-		"env:stop": "wp-env stop"
+	"dependencies": {
+		"@googlemaps/js-api-loader": "^1.16.10",
+		"@wordpress/block-editor": "^14.14.6",
+		"@wordpress/element": "^6.19.1"
 	},
 	"devDependencies": {
-		"@wordpress/env": "^10.29.0",
-		"@wordpress/scripts": "^30.22.0"
-	},
-	"packageManager": "pnpm@10.15.1+sha512.34e538c329b5553014ca8e8f4535997f96180a1d0f614339357449935350d924e22f8614682191264ec33d1462ac21561aff97f6bb18065351c162c7e8f6de67"
+		"@wordpress/env": "^10.30.0",
+		"@wordpress/scripts": "^30.23.0"
+	}
 }

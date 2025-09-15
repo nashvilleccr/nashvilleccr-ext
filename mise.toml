@@ -7,17 +7,18 @@ node = "22"
 _.path = ["./node_modules/.bin"]
 
 [tasks.install-deps]
-depends = ["install-js-deps", "install-php-deps"]
+depends = ["install-js-deps"]
+# depends = ["install-js-deps", "install-php-deps"]
 
-[tasks.install-php-deps]
-sources = ["composer.json"]
-outputs = ["vendor/", "composer.lock"]
-run = "composer install"
+# [tasks.install-php-deps]
+# sources = ["composer.json"]
+# outputs = ["composer.lock"]
+# run = "composer install && touch composer.lock"
 
 [tasks.install-js-deps]
 sources = ["package.json"]
-outputs = ["node_modules/", "pnpm-lock.yaml"]
-run = "pnpm install"
+outputs = ["package-lock.json"]
+run = "npm install && touch package-lock.json"
 
 [tasks.dev]
 depends = ["env-start", "scripts-start"]
@@ -49,10 +50,9 @@ run = "wp-scripts lint-style"
 depends = ["install-deps"]
 run = "wp-scripts lint-js"
 
-# // NOTE: Broken due to pnpm
-# [tasks.packages-update]
-# depends = ["install-deps"]
-# run = "wp-scripts packages-update"
+[tasks.packages-update]
+depends = ["install-deps"]
+run = "wp-scripts packages-update"
 
 [tasks.build-zip]
 depends = ["build"]
@@ -70,11 +70,11 @@ pnpx @wordpress/create-block@latest \
 """
 
 [tasks.scripts-build]
-depends = ["install-deps"]
+depends = ["install-deps", "clean-build"]
 run = "wp-scripts build --webpack-copy-php --blocks-manifest"
 
 [tasks.scripts-start]
-depends = ["install-deps"]
+depends = ["install-deps", "clean-build"]
 run = "wp-scripts start --webpack-copy-php --blocks-manifest"
 
 [tasks.env-start]
@@ -87,9 +87,22 @@ fi
 [tasks.env-after-start]
 run = """\
 #!/bin/bash
-read -r -d '' script <<'EOF'
+script=$(cat <<EOF
 wp theme activate kadence
+wp option update blogname "Nashville CCR (Development)"
+wp option update options_google_api_key "${GOOGLE_API_KEY}"
+wp option update _options_google_api_key field_68c843793f52b
+wp option update options_disable_emoji_support 1
+wp option update _options_disable_emoji_support field_68bf2b1301f88
+wp option update options_load_separate_core_block_assets 1
+wp option update _options_load_separate_core_block_assets field_68bf2b3e01f89
+wp option update options_remove_block_css_globals 1
+wp option update _options_remove_block_css_globals field_68bf2bb601f8a
+wp option update options_disable_classic_theme_css 1
+wp option update _options_disable_classic_theme_css field_68bf2bd201f8b
+wp rewrite structure --hard '/%postname%/'
 EOF
+)
 wp-env run cli bash -c "$script"
 """
 
@@ -122,3 +135,7 @@ EOF
 [tasks.upload-zip]
 depends = ["build-zip"]
 run = "scp nashvilleccr-ext.zip ${SSH_USER}@${SSH_HOST}:${REMOTE_TMP_DIR}/"
+
+[tasks.repl]
+depends = ["env-start"]
+run = "wp-env run cli bash"
