@@ -8,7 +8,12 @@ class RegisterBlocks {
 
         foreach ($blocks as $block) {
             $meta = register_block_type_from_metadata($block);
+            $init = str_replace('block.json', 'init.php', $block);
             $render_block = str_replace('block.json', 'render-block.php', $block);
+
+            if (file_exists(($init))) {
+                require_once $init;
+            }
 
             if (file_exists($render_block)) {
                 Plugin::$render_blocks[$meta->name] = $render_block;

@@ -1,23 +1,35 @@
 import { useBlockProps } from '@wordpress/block-editor';
 import { useEffect, useRef } from '@wordpress/element';
-import { loadMap } from './map';
+import apiFetch from '@wordpress/api-fetch';
+import { loadAPI, loadMap } from './map';
 
 export default function Edit({ clientId }) {
 	const ref = useRef(null);
 
 	useEffect(() => {
-		const iframe = document.querySelector('iframe[name="editor-canvas"]');
-		const iframeDoc = iframe.contentDocument;
-		const div = iframeDoc.getElementById(`block-${clientId}`);
+		// only run once (react strict mode)
+		if (ref.current) {
+			return;
+		}
 
-		loadMap(div).then((Map) => {
-			ref.current = Map;
+		// load the ref
+		const iframe = document.querySelector('iframe[name="editor-canvas"]');
+		ref.current = iframe.contentDocument.getElementById(`block-${clientId}`);
+
+		// load google maps
+		apiFetch({
+			method: 'GET',
+			path: '/nashvilleccr/v1/meta/option?key=google_api_key&type=string',
+		}).then((apiKey) => {
+			loadAPI(apiKey);
 		});
 
-		return () => { ref.current = null };
-	}, []);
+		// initialize the div
+		loadMap(ref.current);
+	}, [])
 
 	return (
-		<div {...useBlockProps()}></div>
+		// ref not passed during render for some reason, so we load it manually above
+		<div /* ref={ref} */ {...useBlockProps()}></div>
 	);
 }

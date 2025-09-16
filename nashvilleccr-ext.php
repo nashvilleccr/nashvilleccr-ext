@@ -35,6 +35,7 @@ class Plugin {
 			return;
 		}
 
+		Meta::init();
 		RegisterBlocks::init();
 		Performance::init();
 	}

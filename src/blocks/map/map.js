@@ -1,18 +1,34 @@
 import { Loader } from '@googlemaps/js-api-loader';
 
-const loader = new Loader({
-  apiKey: globalThis.GOOGLE_API_KEY,
-  version: "weekly",
-  libraries: []
+export let loadAPI;
+
+/** @type Promise<string> */
+const $apiKey = new Promise((resolve) => {
+    loadAPI = resolve;
+
+    if (globalThis.GOOGLE_API_KEY) {
+        loadAPI(globalThis.GOOGLE_API_KEY);
+    }
 });
 
-let $loader = loader.importLibrary("maps");
+const $loader = $apiKey.then((apiKey) => new Loader({
+    apiKey,
+    version: "weekly",
+    libraries: [],
+}));
+
+/** @type Promise<google.maps.MapsLibrary> */
+export const $maps = $loader.then((loader) => loader.importLibrary("maps"))
+
+if (globalThis.GOOGLE_API_KEY) {
+    loadAPI(globalThis.GOOGLE_API_KEY);
+}
 
 /**
  * @param {HTMLElement} div - element for the map to be loaded into
  */
 export const loadMap = async (div) => {
-    const { Map } = await $loader;
+    const { Map } = await $maps;
 
     /** @type google.map.MapsLibrary */
     const map = new Map(div, {
@@ -26,8 +42,10 @@ export const loadMap = async (div) => {
     return map;
 }
 
-export const loadMaps = () => {
-    for (const div of document.querySelectorAll('.wp-block-nashvilleccr-map')) {
-        loadMap(div);
-    }
+/**
+ * @returns {Promise<google.map.MapsLibrary[]>}
+ */
+export const loadMaps = async () => {
+    const divs = document.querySelectorAll('.wp-block-nashvilleccr-map');
+    return Promise.all([...divs].map((div) => loadMap(div)));
 };
