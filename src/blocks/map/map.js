@@ -14,19 +14,13 @@ const $apiKey = new Promise((resolve) => {
 const $loader = $apiKey.then((apiKey) => new Loader({
     apiKey,
     version: "weekly",
-    libraries: [],
+    libraries: ["maps"],
 }));
 
 /** @type Promise<google.maps.MapsLibrary> */
 export const $maps = $loader.then((loader) => loader.importLibrary("maps"))
 
-if (globalThis.GOOGLE_API_KEY) {
-    loadAPI(globalThis.GOOGLE_API_KEY);
-}
-
-/**
- * @param {HTMLElement} div - element for the map to be loaded into
- */
+/** @param {HTMLElement} div - element for the map to be loaded into */
 export const loadMap = async (div) => {
     const { Map } = await $maps;
 
@@ -37,14 +31,14 @@ export const loadMap = async (div) => {
             lng: -86.38,
         },
         zoom: 7,
+        mapTypeControl: false,
+        streetViewControl: false,
     });
 
     return map;
 }
 
-/**
- * @returns {Promise<google.map.MapsLibrary[]>}
- */
+/** @returns {Promise<google.map.MapsLibrary[]>} */
 export const loadMaps = async () => {
     const divs = document.querySelectorAll('.wp-block-nashvilleccr-map');
     return Promise.all([...divs].map((div) => loadMap(div)));
