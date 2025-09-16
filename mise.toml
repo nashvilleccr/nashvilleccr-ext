@@ -7,13 +7,12 @@ node = "22"
 _.path = ["./node_modules/.bin"]
 
 [tasks.install-deps]
-depends = ["install-js-deps"]
-# depends = ["install-js-deps", "install-php-deps"]
+depends = ["install-js-deps", "install-php-deps"]
 
-# [tasks.install-php-deps]
-# sources = ["composer.json"]
-# outputs = ["composer.lock"]
-# run = "composer install && touch composer.lock"
+[tasks.install-php-deps]
+sources = ["composer.json"]
+outputs = ["composer.lock"]
+run = "composer install && touch composer.lock"
 
 [tasks.install-js-deps]
 sources = ["package.json"]
