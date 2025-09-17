@@ -3,7 +3,6 @@ php = "8.2"
 node = "22"
 
 [env]
-
 _.path = ["./node_modules/.bin"]
 
 [tasks.install-deps]
@@ -55,7 +54,6 @@ run = "wp-scripts packages-update"
 
 [tasks.build-zip]
 depends = ["build"]
-outputs = ["nashvilleccr-ext.zip"]
 run = "wp-scripts plugin-zip"
 
 [tasks.create-block]
