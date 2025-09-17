@@ -14,13 +14,10 @@
 namespace NashvilleCCR; defined('ABSPATH') || exit;
 
 class Plugin {
-	static $plugin_dir = __DIR__;
-	static $blocks_dir = __DIR__ . '/build/blocks';
-	static $blocks_manifest = __DIR__ . '/build/blocks-manifest.php';
-	static $render_blocks = [];
+	const DIR = __DIR__;
 
 	static function load() {
-		foreach (glob(self::$plugin_dir . "/includes/*.php") as $file) {
+		foreach (glob(self::DIR . "/includes/php/*.php") as $file) {
 			require $file;
 		}
 

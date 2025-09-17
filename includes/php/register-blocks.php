@@ -1,10 +1,15 @@
 <?php namespace NashvilleCCR; defined('ABSPATH') || exit;
 
 class RegisterBlocks {
-    static function init() {
-        wp_register_block_metadata_collection(Plugin::$blocks_dir, Plugin::$blocks_manifest);
+    static $render_blocks = [];
 
-        $blocks = \WP_Block_Metadata_Registry::get_collection_block_metadata_files(Plugin::$blocks_dir);
+    static function init() {
+        $blocks_dir = Plugin::DIR . '/build/blocks';
+        $blocks_manifest = Plugin::DIR . '/build/blocks-manifest.php';
+
+        wp_register_block_metadata_collection($blocks_dir, $blocks_manifest);
+
+        $blocks = \WP_Block_Metadata_Registry::get_collection_block_metadata_files($blocks_dir);
 
         foreach ($blocks as $block) {
             $meta = register_block_type_from_metadata($block);
@@ -16,7 +21,7 @@ class RegisterBlocks {
             }
 
             if (file_exists($render_block)) {
-                Plugin::$render_blocks[$meta->name] = $render_block;
+                self::$render_blocks[$meta->name] = $render_block;
             }
         }
 
@@ -24,7 +29,7 @@ class RegisterBlocks {
     }
 
     static function render_block($block_content, $block) {
-        $file = Plugin::$render_blocks[$block['blockName']] ?? null;
+        $file = self::$render_blocks[$block['blockName']] ?? null;
 
         if (!is_null($file)) {
             require_once $file;

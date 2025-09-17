@@ -1,0 +1,47 @@
+{
+    "key": "group_68c84377934f6",
+    "title": "Environment",
+    "fields": [
+        {
+            "key": "field_68c843793f52b",
+            "label": "Google API Key",
+            "name": "google_api_key",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Requires \"Maps JavaScript API\" permissions.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "options_page",
+                "operator": "==",
+                "value": "nashville-ccr-ext"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "left",
+    "instruction_placement": "field",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "private": true,
+    "modified": 1758075248
+}
