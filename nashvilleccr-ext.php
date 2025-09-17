@@ -17,13 +17,13 @@ class Plugin {
 	const DIR = __DIR__;
 
 	static function load() {
-		foreach (glob(self::DIR . "/includes/php/*.php") as $file) {
-			require $file;
+		if (!function_exists('get_field')) {
+			add_action('admin_notices', [self::class, 'scf_admin_notice']);
+			return;
 		}
 
-		if (!function_exists('get_field')) {
-			warn("Secure Custom Fields plugin required for this plugin to work.");
-			return;
+		foreach (glob(self::DIR . "/includes/php/*.php") as $file) {
+			require $file;
 		}
 
 		RegisterFields::load();
@@ -31,24 +31,18 @@ class Plugin {
 		Performance::load();
 		Meta::load();
 	}
-}
 
-function notice($msg) {
-	trigger_error($msg, E_USER_NOTICE);
-}
-
-function warn($msg) {
-	trigger_error($msg, E_USER_WARNING);
-}
-
-function debug($title, $data = true) {
-	if (!defined('DEV')) {
-		return;
-	}
-
-	add_action('kadence_before_wrapper', function() use($title, $data) {
-		echo "<pre><code>{$title} => " . json_encode($data) . '</code></pre>';
-	});
+	static function scf_admin_notice() { ?>
+		<div class="notice notice-error is-dismissible">
+			<p>
+				<strong>Nashville CCR Ext</strong> plugin requires either
+				<a target="_blank" href="https://wordpress.org/plugins/secure-custom-fields/">Secure Custom Fields</a>
+				or
+				<a target="_blank" href="https://www.advancedcustomfields.com/pro/">Advanced Custom Fields Pro</a>
+				to be active in order to function.
+			</p>
+		</div>
+	<? }
 }
 
 add_action('plugins_loaded', [Plugin::class, 'load'], 20);
