@@ -1,4 +1,12 @@
 {
     "intelephense.environment.phpVersion": "8.2.0",
-    "intelephense.files.maxSize": 10000000
+    "intelephense.files.maxSize": 10000000,
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "~/.vscode-server/**": true
+    }
 }
