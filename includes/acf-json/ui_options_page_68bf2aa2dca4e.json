@@ -19,5 +19,6 @@
     "data_storage": "options",
     "post_id": "",
     "autoload": 0,
+    "private": true,
     "modified": 1758075249
 }
