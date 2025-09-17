@@ -21,20 +21,15 @@ class Plugin {
 			require $file;
 		}
 
-		RegisterFields::load();
-		
-		add_action('init', [self::class, 'init']);
-	}
-
-	static function init() {
 		if (!function_exists('get_field')) {
 			warn("Secure Custom Fields plugin required for this plugin to work.");
 			return;
 		}
 
-		Meta::init();
-		RegisterBlocks::init();
-		Performance::init();
+		RegisterFields::load();
+		RegisterBlocks::load();
+		Performance::load();
+		Meta::load();
 	}
 }
 
@@ -56,4 +51,4 @@ function debug($title, $data = true) {
 	});
 }
 
-Plugin::load();
+add_action('plugins_loaded', [Plugin::class, 'load'], 20);

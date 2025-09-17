@@ -3,6 +3,10 @@
 class RegisterBlocks {
     static $render_blocks = [];
 
+    static function load() {
+        add_action('init', [self::class, 'init']);
+    }
+
     static function init() {
         $blocks_dir = Plugin::DIR . '/build/blocks';
         $blocks_manifest = Plugin::DIR . '/build/blocks-manifest.php';

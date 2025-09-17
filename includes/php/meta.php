@@ -8,7 +8,7 @@ enum FieldType {
 class Meta {
     static $options = [];
 
-    static function init() {
+    static function load() {
         add_action('rest_api_init', [self::class, 'rest_api_init']);
     }
 
