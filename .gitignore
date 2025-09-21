@@ -37,3 +37,6 @@ mise.local.toml
 
 # composer
 vendor/
+
+# WordPress export
+imports.xml

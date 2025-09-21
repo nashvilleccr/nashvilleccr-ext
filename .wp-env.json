@@ -13,6 +13,7 @@
 	},
 	"plugins": [
 		".",
+		"https://downloads.wordpress.org/plugin/wordpress-importer.zip",
 		"https://downloads.wordpress.org/plugin/kadence-blocks.zip",
 		"https://downloads.wordpress.org/plugin/polylang.zip",
 		"https://downloads.wordpress.org/plugin/seo-by-rank-math.zip",

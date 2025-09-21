@@ -75,16 +75,16 @@ depends = ["install-deps", "clean-build"]
 run = "wp-scripts start --webpack-copy-php --blocks-manifest"
 
 [tasks.env-start]
-run = """
-if [ -z \"$(docker ps -q)\" ];
-    then wp-env start
-fi
-"""
+run = "if [ -z \"$(docker ps -q)\" ]; then wp-env start; fi"
 
 [tasks.env-after-start]
 run = """\
 #!/bin/bash
 script=$(cat <<EOF
+PLUGIN_DIR="wp-content/plugins/nashvilleccr-ext"
+if [ -e "\\${PLUGIN_DIR}/imports.xml" ]; then
+    wp import --authors=skip "\\${PLUGIN_DIR}/imports.xml"
+fi
 wp theme activate kadence
 wp option update blogname "Nashville CCR (Development)"
 wp option update options_google_api_key "${GOOGLE_API_KEY}"
@@ -104,6 +104,9 @@ wp-env run cli bash -c "$script"
 """
 
 [tasks.env-restart]
+run = "wp-env start"
+
+[tasks.env-update]
 run = "wp-env start --update"
 
 [tasks.env-stop]
