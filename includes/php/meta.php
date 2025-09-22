@@ -3,6 +3,7 @@
 enum FieldType {
     case Bool;
     case String;
+    case Int;
 }
 
 class Meta {
@@ -30,9 +31,19 @@ class Meta {
                     $res = "";
                 }
                 break;
+            case FieldType::Int:
+                if (!is_int(($res))) {
+                    $res = 0;
+                }
+                break;
         }
 
         return self::$options[$key] = $res;
+    }
+
+    static function set_option($key, $value) {
+        self::$options[$key] = $value;
+        update_field($key, $value, 'option');
     }
 
     static function to_field_type(string $str) {
@@ -41,6 +52,8 @@ class Meta {
                 return FieldType::Bool;
             case "string":
                 return FieldType::String;
+            case "int":
+                return FieldType::Int;
             default:
                 return null;
         }
@@ -77,8 +90,7 @@ class Meta {
         }
 
         return new \WP_REST_Response(
-            Meta::option($key, $field_type),
-            200
+            Meta::option($key, $field_type)
         );
     }
 

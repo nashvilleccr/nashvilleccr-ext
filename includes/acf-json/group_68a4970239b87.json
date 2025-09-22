@@ -26,12 +26,12 @@
             "sub_fields": [
                 {
                     "key": "field_68a497852d5ec",
-                    "label": "",
-                    "name": "time",
+                    "label": "From",
+                    "name": "from",
                     "aria-label": "",
                     "type": "date_time_picker",
                     "instructions": "",
-                    "required": 0,
+                    "required": 1,
                     "conditional_logic": 0,
                     "wrapper": {
                         "width": "",
@@ -41,8 +41,29 @@
                     "display_format": "F j, Y g:i a",
                     "return_format": "Y-m-d H:i:s",
                     "first_day": 1,
-                    "allow_in_bindings": 0,
                     "default_to_current_date": 0,
+                    "allow_in_bindings": 0,
+                    "parent_repeater": "field_68a497022d5eb"
+                },
+                {
+                    "key": "field_68d0cf5c86db0",
+                    "label": "To",
+                    "name": "to",
+                    "aria-label": "",
+                    "type": "date_time_picker",
+                    "instructions": "",
+                    "required": 1,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "display_format": "F j, Y g:i a",
+                    "return_format": "Y-m-d H:i:s",
+                    "first_day": 1,
+                    "default_to_current_date": 0,
+                    "allow_in_bindings": 0,
                     "parent_repeater": "field_68a497022d5eb"
                 }
             ]
@@ -123,7 +144,7 @@
     "hide_on_screen": "",
     "active": true,
     "description": "",
-    "show_in_rest": 0,
-    "private": true,
-    "modified": 1758075248
+    "show_in_rest": 1,
+    "modified": 1758564987,
+    "private": true
 }

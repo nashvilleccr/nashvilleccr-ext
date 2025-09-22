@@ -40,7 +40,7 @@
     "hide_on_screen": "",
     "active": true,
     "description": "",
-    "show_in_rest": 0,
-    "private": true,
-    "modified": 1758075249
+    "show_in_rest": 1,
+    "modified": 1758491948,
+    "private": true
 }

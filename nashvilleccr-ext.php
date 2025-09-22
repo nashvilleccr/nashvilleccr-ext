@@ -26,6 +26,7 @@ class Plugin {
 			require $file;
 		}
 
+		Database::load();
 		RegisterFields::load();
 		RegisterBlocks::load();
 		Performance::load();
