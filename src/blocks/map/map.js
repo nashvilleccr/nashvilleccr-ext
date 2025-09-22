@@ -17,6 +17,9 @@ const $loader = $apiKey.then((apiKey) => new Loader({
     libraries: ["maps"],
 }));
 
+/** @type Promise<google.maps.CoreLibrary> */
+export const $core = $loader.then((loader) => loader.importLibrary("core"));
+
 /** @type Promise<google.maps.MapsLibrary> */
 export const $maps = $loader.then((loader) => loader.importLibrary("maps"))
 
@@ -26,14 +29,15 @@ const TENNESSEE_CENTER = {
 };
 
 const TENNESSEE_BOUNDS = {
-    north: 38,
-    east: -82,
-    south: 34,
-    west: -90.5,
+    "south": 34.07981003231745,
+    "west": -90.39000976562498,
+    "north": 37.64018931325273,
+    "east": -82.36999023437498
 };
 
 /** @param {HTMLElement} div - element for the map to be loaded into */
 export const loadMap = async (div) => {
+    const { event } = await $core;
     const { Map } = await $maps;
 
     /** @type google.map.MapsLibrary */
@@ -41,11 +45,21 @@ export const loadMap = async (div) => {
         center: TENNESSEE_CENTER,
         restriction: {
             latLngBounds: TENNESSEE_BOUNDS,
-            strictBounds: true,
+            strictBounds: false,
         },
         zoom: 7,
         mapTypeControl: false,
         streetViewControl: false,
+    });
+
+    const updateBounds = () => {
+        map.fitBounds(TENNESSEE_BOUNDS);
+    };
+
+    const observer = new ResizeObserver(updateBounds);
+
+    event.addListenerOnce(map, 'tilesloaded', () => {
+        observer.observe(div);
     });
 
     return map;
