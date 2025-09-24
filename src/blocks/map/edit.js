@@ -24,8 +24,16 @@ export default function Edit({ clientId }) {
 			loadAPI(apiKey);
 		});
 
-		// initialize the div
-		loadMap(ref.current);
+		// load the map data
+		apiFetch({
+			method: 'GET',
+			path: '/nashvilleccr/v1/mapdata',
+		}).then((data) => {
+			ref.current.setAttribute('data-preload', JSON.stringify(data));
+
+			// initialize the div
+			loadMap(ref.current);
+		})
 	}, [])
 
 	return (

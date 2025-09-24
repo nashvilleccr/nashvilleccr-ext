@@ -49,7 +49,7 @@ export const loadMap = async (div) => {
         },
         zoom: 7,
         mapTypeControl: false,
-        streetViewControl: false,
+        gestureHandling: 'cooperative',
     });
 
     const updateBounds = () => {

@@ -1,6 +1,20 @@
 <?php namespace NashvilleCCR; defined('ABSPATH') || exit;
 
-class MapAPI {
+class MapBlock {
+    static $loaded_api_key = false;
+
+    static function load_api_key() {
+        if (self::$loaded_api_key) {
+            return;
+        }
+
+        self::$loaded_api_key = true;
+
+        ?><script>
+            globalThis.GOOGLE_API_KEY = "<?= Meta::option("google_api_key", FieldType::String) ?>";
+        </script><?php
+    }
+
     const SCHEMA = [
         '$schema' => 'http://json-schema.org/draft-04/schema#',
         'title' => 'Map data',
@@ -43,48 +57,77 @@ class MapAPI {
     const EVENT_SCHEMA = [
         'type' => 'object',
         'properties' => [
-            'id' => ['type' => 'number'],
             'title' => ['type' => 'string'],
             'link' => ['type' => 'string'],
             'location' => ['type' => 'number'],
         ],
-        'required' => ['id', 'title', 'link', 'location'],
+        'required' => ['title', 'link', 'location'],
         'additionalProperties' => false,
     ];
 
     const GROUP_SCHEMA = [
         'type' => 'object',
         'properties' => [
-            'id' => ['type' => 'number'],
             'title' => ['type' => 'string'],
             'link' => ['type' => 'string'],
             'location' => ['type' => 'number'],
         ],
-        'required' => ['id', 'title', 'link', 'location'],
+        'required' => ['title', 'link', 'location'],
         'additionalProperties' => false,
     ];
 
     const LOCATION_SCHEMA = [
         'type' => 'object',
         'properties' => [
-            'id' => ['type' => 'number'],
             'title' => ['type' => 'string'],
             'link' => ['type' => 'string'],
-            'lat' => ['type' => 'number'],
-            'lng' => ['type' => 'number'],
+            'address' => [
+                'type' => 'object',
+                'properties' => [
+                    'lat' => ['type' => 'number'],
+                    'lng' => ['type' => 'number'],
+                    'zoom' => ['type' => 'number'],
+                    'place_id' => ['type' => 'string'],
+                    'name' => ['type' => 'string'],
+                    'street_number' => ['type' => 'string'],
+                    'street_name' => ['type' => 'string'],
+                    'street_name_short' => ['type' => 'string'],
+                    'city' => ['type' => 'string'],
+                    'state' => ['type' => 'string'],
+                    'state_short' => ['type' => 'string'],
+                    'post_code' => ['type' => 'string'],
+                    'country' => ['type' => 'string'],
+                    'country_short' => ['type' => 'string'],
+                ],
+                'required' => [
+                    'lat',
+                    'lng',
+                    'zoom',
+                    'place_id',
+                    'name',
+                    'street_number',
+                    'street_name',
+                    'street_name_short',
+                    'city',
+                    'state',
+                    'state_short',
+                    'post_code',
+                    'country',
+                    'country_short',
+                ],
+            ],
         ],
-        'required' => ['id', 'title', 'link', 'lat', 'lng'],
+        'required' => ['title', 'link', 'address'],
         'additionalProperties' => false,
     ];
 
     const CONTACT_SCHEMA = [
         'type' => 'object',
         'properties' => [
-            'id' => ['type' => 'number'],
             'title' => ['type' => 'string'],
             'link' => ['type' => 'string'],
         ],
-        'required' => ['id', 'title', 'link'],
+        'required' => ['title', 'link'],
         'additionalProperties' => false,
     ];
 
@@ -101,7 +144,7 @@ class MapAPI {
         ],
         'from' => [
             'type' => 'string',
-            'description' => 'Only return events past the provided datetime. (No cutoff if not provided.)',
+            'description' => 'Only return events past the provided datetime. (Current time if not provided.)',
             'format' => 'date-time',
         ],
         'to' => [
@@ -122,6 +165,7 @@ class MapAPI {
     }
 
     static function get_mapdata(\WP_REST_Request $request) {
+        global $post;
         $type = $request->get_param('type');
         $state = $request->get_param('state');
         $from = new \DateTime($request->get_param('from') ?? '');
@@ -133,15 +177,91 @@ class MapAPI {
         $locations = [];
         $contacts = [];
 
+        if (!is_null($state)) {
+            $state_query_args = [
+                'post_type' => 'location',
+                'posts_per_page' => -1,
+                'post_status' => 'publish',
+                'meta_query' => [
+                    [
+                        'key' => 'address',
+                        'compare' => 'LIKE',
+                        'value' => "%\"state_short\";s:2:\"{$state}\";%",
+                    ]
+                ],
+                'fields' => 'ids',
+            ];
+
+            $state_query = new \WP_Query($state_query_args);
+
+            $location_ids_in_state = $state_query->get_posts();
+        }
+
         if (is_null($type) || $type === 'events') {
-            // load events
-            // filter by datetime and state
+            $events_query_args = [
+                'post_type' => 'event',
+                'posts_per_page' => -1,
+                'post_status' => 'publish',
+                'meta_query' => [
+                    [
+                        'key' => '!schedule\_%\_from',
+                        'compare' => '>=',
+                        'value' => $from->format('Y-m-d H:i:s'),
+                        'type' => 'DATETIME',
+                    ]
+                ],
+            ];
+
+            if (!is_null($to)) {
+                $events_query_args['meta_query'][] = [
+                    'key' => '!schedule\_%\_to',
+                    'compare' => '<',
+                    'value' => $to->format('Y-m-d H:i:s'),
+                    'type' => 'DATETIME',
+                ];
+            }
+
+            if (!is_null($state)) {
+                $events_query_args['meta_query'][] = [
+                    'key' => 'location',
+                    'compare' => 'IN',
+                    'value' => $location_ids_in_state,
+                ];
+            }
+
+            $events_query = self::likebang_query($events_query_args);
+
+            while ($events_query->have_posts()) {
+                $events_query->the_post();
+                self::add_results($events, $locations, $contacts);
+            }
         }
 
         if (is_null($type) || $type === 'groups') {
-            // load groups
-            // filter by datetime and state
+            $groups_query_args = [
+                'post_type' => 'group',
+                'posts_per_page' => -1,
+                'post_status' => 'publish',
+                'meta_query' => [],
+            ];
+
+            if (!is_null($state)) {
+                $groups_query_args['meta_query'][] = [
+                    'key' => 'location',
+                    'compare' => 'IN',
+                    'value' => $location_ids_in_state,
+                ];
+            }
+
+            $groups_query = new \WP_Query($groups_query_args);
+
+            while ($groups_query->have_posts()) {
+                $groups_query->the_post();
+                self::add_results($groups, $locations, $contacts);
+            }
         }
+
+        wp_reset_postdata();
 
         return new \WP_REST_Response([
             'groups' => $groups,
@@ -150,12 +270,62 @@ class MapAPI {
             'contacts' => $contacts,
         ]);
     }
+
+    static function add_results(&$eventsOrGroups, &$locations, &$contacts) {
+        global $post;
+        $location_id = (int) get_post_meta($post->ID, 'location', true);
+
+        $eventsOrGroups[$post->ID] = [
+            'title' => $post->post_title,
+            'link' => get_permalink($post),
+            'location' => $location_id,
+        ];
+
+        if (!isset($locations[$location_id])) {
+            $location = get_post($location_id);
+            $address = get_field('address', $location_id);
+
+            $locations[$location->ID] = [
+                'title' => $location->post_title,
+                'link' => get_permalink($location),
+                'address' => $address,
+            ];
+        }
+
+        foreach (get_field('contacts') as $contact) {
+            if (isset($contacts[$contact->ID])) {
+                continue;
+            }
+
+            $contacts[$contact->ID] = [
+                'title' => $contact->post_title,
+                'link' => get_permalink($contact),
+            ];
+        }
+    }
     
     static function preload_data() {
         $req = new \WP_REST_Request('GET', '/nashvilleccr/v1/mapdata');
         $res = rest_do_request($req);
         return $res->get_data();
     }
+
+    static function likebang_query($args) {
+        add_action('posts_where', [self::class, 'likebang_query_posts_where']);
+        $res = new \WP_Query($args);
+        remove_action('posts_where', [self::class, 'likebang_query_posts_where']);
+        return $res;
+    }
+
+    static function likebang_query_posts_where($where) {
+        $where = preg_replace(
+            "/meta_key\s=\s'!((?:[^'\\\\]|\\\\.)*)'/",
+            "meta_key like '\$1'",
+            $where
+        );
+
+        return str_replace('\\\\', '\\', $where);
+    }
 }
 
-add_action('rest_api_init', [MapAPI::class, 'rest_api_init']);
+add_action('rest_api_init', [MapBlock::class, 'rest_api_init']);

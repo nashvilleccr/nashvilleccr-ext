@@ -26,11 +26,11 @@ class Plugin {
 			require $file;
 		}
 
-		Database::load();
-		RegisterFields::load();
-		RegisterBlocks::load();
-		Performance::load();
+		GoogleMapsSCF::load();
 		Meta::load();
+		Performance::load();
+		RegisterBlocks::load();
+		RegisterFields::load();
 	}
 
 	static function scf_admin_notice() { ?>

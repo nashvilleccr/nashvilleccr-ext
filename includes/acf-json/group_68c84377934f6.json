@@ -8,7 +8,7 @@
             "name": "google_api_key",
             "aria-label": "",
             "type": "text",
-            "instructions": "Requires \"Maps JavaScript API\" permissions.",
+            "instructions": "Requires \"Maps JavaScript API\" and \"Places API\" permissions.",
             "required": 0,
             "conditional_logic": 0,
             "wrapper": {
