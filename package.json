@@ -5,12 +5,14 @@
 	"author": "Michael LaCorte",
 	"license": "GPL-2.0-or-later",
 	"dependencies": {
-		"@googlemaps/js-api-loader": "^1.16.10",
-		"@wordpress/api-fetch": "^7.30.0",
-		"@wordpress/block-editor": "^14.14.6",
-		"@wordpress/element": "^6.19.1"
+		"@googlemaps/js-api-loader": "^1.16.10"
 	},
 	"devDependencies": {
+		"@types/google.maps": "^3.58.1",
+		"@wordpress/api-fetch": "^7.30.0",
+		"@wordpress/block-editor": "^14.14.6",
+		"@wordpress/components": "^30.4.0",
+		"@wordpress/element": "^6.19.1",
 		"@wordpress/env": "^10.30.0",
 		"@wordpress/scripts": "^30.23.0"
 	}

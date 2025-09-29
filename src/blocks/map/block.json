@@ -3,11 +3,41 @@
 	"apiVersion": 3,
 	"name": "nashvilleccr/map",
 	"version": "0.1.0",
-	"title": "Map",
+	"title": "Map (NCCR)",
 	"category": "widgets",
 	"icon": "location-alt",
 	"description": "An interactive map for events and groups",
 	"example": {},
+	"attributes": {
+		"preloadData": {
+			"type": "boolean",
+			"default": true
+		},
+		"height": {
+			"type": "string",
+			"default": "400px"
+		},
+		"mapId": {
+			"type": "string",
+			"default": "DEMO_MAP_ID"
+		},
+		"eventPinColor": {
+			"type": "string",
+			"default": "#ea4335"
+		},
+		"eventPinBorderColor": {
+			"type": "string",
+			"default": "#b31412"
+		},
+		"groupPinColor": {
+			"type": "string",
+			"default": "#d0b310"
+		},
+		"groupPinBorderColor": {
+			"type": "string",
+			"default": "#88760f"
+		}
+	},
 	"supports": {
 		"html": false
 	},

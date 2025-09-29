@@ -60,8 +60,12 @@ class MapBlock {
             'title' => ['type' => 'string'],
             'link' => ['type' => 'string'],
             'location' => ['type' => 'number'],
+            'contacts' => [
+                'type' => 'array',
+                'items' => ['type' => 'number'],
+            ],
         ],
-        'required' => ['title', 'link', 'location'],
+        'required' => ['title', 'link', 'location', 'contacts'],
         'additionalProperties' => false,
     ];
 
@@ -71,8 +75,12 @@ class MapBlock {
             'title' => ['type' => 'string'],
             'link' => ['type' => 'string'],
             'location' => ['type' => 'number'],
+            'contacts' => [
+                'type' => 'array',
+                'items' => ['type' => 'number'],
+            ],
         ],
-        'required' => ['title', 'link', 'location'],
+        'required' => ['title', 'link', 'location', 'contacts'],
         'additionalProperties' => false,
     ];
 
@@ -81,43 +89,10 @@ class MapBlock {
         'properties' => [
             'title' => ['type' => 'string'],
             'link' => ['type' => 'string'],
-            'address' => [
-                'type' => 'object',
-                'properties' => [
-                    'lat' => ['type' => 'number'],
-                    'lng' => ['type' => 'number'],
-                    'zoom' => ['type' => 'number'],
-                    'place_id' => ['type' => 'string'],
-                    'name' => ['type' => 'string'],
-                    'street_number' => ['type' => 'string'],
-                    'street_name' => ['type' => 'string'],
-                    'street_name_short' => ['type' => 'string'],
-                    'city' => ['type' => 'string'],
-                    'state' => ['type' => 'string'],
-                    'state_short' => ['type' => 'string'],
-                    'post_code' => ['type' => 'string'],
-                    'country' => ['type' => 'string'],
-                    'country_short' => ['type' => 'string'],
-                ],
-                'required' => [
-                    'lat',
-                    'lng',
-                    'zoom',
-                    'place_id',
-                    'name',
-                    'street_number',
-                    'street_name',
-                    'street_name_short',
-                    'city',
-                    'state',
-                    'state_short',
-                    'post_code',
-                    'country',
-                    'country_short',
-                ],
-            ],
+            'lat' => ['type' => 'number'],
+            'lng' => ['type' => 'number'],
         ],
-        'required' => ['title', 'link', 'address'],
+        'required' => ['title', 'link', 'lat', 'lng'],
         'additionalProperties' => false,
     ];
 
@@ -165,7 +140,6 @@ class MapBlock {
     }
 
     static function get_mapdata(\WP_REST_Request $request) {
-        global $post;
         $type = $request->get_param('type');
         $state = $request->get_param('state');
         $from = new \DateTime($request->get_param('from') ?? '');
@@ -273,12 +247,13 @@ class MapBlock {
 
     static function add_results(&$eventsOrGroups, &$locations, &$contacts) {
         global $post;
-        $location_id = (int) get_post_meta($post->ID, 'location', true);
+        $location_id = get_field('location');
 
         $eventsOrGroups[$post->ID] = [
             'title' => $post->post_title,
             'link' => get_permalink($post),
             'location' => $location_id,
+            'contacts' => get_field('contacts'),
         ];
 
         if (!isset($locations[$location_id])) {
@@ -288,14 +263,17 @@ class MapBlock {
             $locations[$location->ID] = [
                 'title' => $location->post_title,
                 'link' => get_permalink($location),
-                'address' => $address,
+                'lat' => $address['lat'],
+                'lng' => $address['lng'],
             ];
         }
 
-        foreach (get_field('contacts') as $contact) {
-            if (isset($contacts[$contact->ID])) {
+        foreach (get_field('contacts') as $contactId) {
+            if (isset($contacts[$contactId])) {
                 continue;
             }
+
+            $contact = get_post($contactId);
 
             $contacts[$contact->ID] = [
                 'title' => $contact->post_title,

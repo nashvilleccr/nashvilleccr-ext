@@ -89,7 +89,7 @@
                 "publish"
             ],
             "taxonomy": "",
-            "return_format": "object",
+            "return_format": "id",
             "multiple": 0,
             "allow_null": 0,
             "allow_in_bindings": 1,
@@ -118,7 +118,7 @@
                 "publish"
             ],
             "taxonomy": "",
-            "return_format": "object",
+            "return_format": "id",
             "multiple": 1,
             "allow_null": 0,
             "allow_in_bindings": 1,
@@ -145,6 +145,6 @@
     "active": true,
     "description": "",
     "show_in_rest": 1,
-    "modified": 1758564987,
+    "modified": 1759114980,
     "private": true
 }

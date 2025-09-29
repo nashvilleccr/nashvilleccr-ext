@@ -1,3 +1,3 @@
-import { loadMaps } from './map';
+import { MapBlock } from './map';
 
-loadMaps();
+MapBlock.loadAll();
