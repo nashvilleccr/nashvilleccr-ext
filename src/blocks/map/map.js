@@ -166,6 +166,7 @@ export class MapBlock {
             renderingType: this.libs.maps.RenderingType.VECTOR,
         });
 
+        this.#updateBounds();
         this.resizeObserver = new ResizeObserver(this.#updateBounds);
         this.libs.core.event.addListenerOnce(this.map, "tilesloaded", () => {
             this.resizeObserver.observe(this.$block);

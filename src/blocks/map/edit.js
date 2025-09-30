@@ -2,7 +2,13 @@ import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
 import { useEffect, useRef, useState } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { MapBlock } from './map';
-import { PanelBody, TextControl, ToggleControl, ColorPicker } from '@wordpress/components';
+import {
+	BaseControl,
+	PanelBody,
+	TextControl,
+	ToggleControl,
+	ColorPalette,
+} from '@wordpress/components';
 
 export default function Edit({ attributes, setAttributes, clientId }) {
 	const {
@@ -87,40 +93,61 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 		<>
 			<InspectorControls>
 				<PanelBody title="Settings">
-					<ToggleControl
-						label="Preload Data"
-						checked={preloadData}
-						onChange={(preloadData) => setAttributes({ preloadData })}
-					/>
+					<BaseControl __nextHasNoMarginBottom>
+						<BaseControl.VisualLabel>Preload Data</BaseControl.VisualLabel>
+						<ToggleControl
+							label="Preload Data"
+							checked={preloadData}
+							onChange={(preloadData) => setAttributes({ preloadData })}
+						/>
+					</BaseControl>
+
 					<TextControl
+						__nextHasNoMarginBottom
 						label="Height"
 						value={height}
 						onChange={(height) => setAttributes({ height })}
 					/>
-					<ColorPicker
-						label="Event Pin Color"
-						color={eventPinColor}
-						enableAlpha
-						onChange={(eventPinColor) => setAttributes ({ eventPinColor })}
-					/>
-					<ColorPicker
-						label="Event Pin Border Color"
-						color={eventPinBorderColor}
-						enableAlpha
-						onChange={(eventPinBorderColor) => setAttributes ({ eventPinBorderColor })}
-					/>
-					<ColorPicker
-						label="Group Pin Color"
-						color={groupPinColor}
-						enableAlpha
-						onChange={(groupPinColor) => setAttributes ({ groupPinColor })}
-					/>
-					<ColorPicker
-						label="Group Pin Border Color"
-						color={groupPinBorderColor}
-						enableAlpha
-						onChange={(groupPinBorderColor) => setAttributes ({ groupPinBorderColor })}
-					/>
+
+					<BaseControl __nextHasNoMarginBottom>
+						<BaseControl.VisualLabel>Event Pin Color</BaseControl.VisualLabel>
+						<ColorPalette
+							value={eventPinColor}
+							asButtons
+							clearable={false}
+							onChange={(eventPinColor) => setAttributes ({ eventPinColor })}
+						/>
+					</BaseControl>
+
+					<BaseControl __nextHasNoMarginBottom>
+						<BaseControl.VisualLabel>Event Pin Color</BaseControl.VisualLabel>
+						<ColorPalette
+							label="Event Pin Border Color"
+							value={eventPinBorderColor}
+							clearable={false}
+							onChange={(eventPinBorderColor) => setAttributes ({ eventPinBorderColor })}
+						/>
+					</BaseControl>
+
+					<BaseControl __nextHasNoMarginBottom>
+						<BaseControl.VisualLabel>Event Pin Color</BaseControl.VisualLabel>
+						<ColorPalette
+							label="Group Pin Color"
+							value={groupPinColor}
+							clearable={false}
+							onChange={(groupPinColor) => setAttributes ({ groupPinColor })}
+						/>
+					</BaseControl>
+
+					<BaseControl __nextHasNoMarginBottom>
+						<BaseControl.VisualLabel>Event Pin Color</BaseControl.VisualLabel>
+						<ColorPalette
+							label="Group Pin Border Color"
+							value={groupPinBorderColor}
+							clearable={false}
+							onChange={(groupPinBorderColor) => setAttributes ({ groupPinBorderColor })}
+						/>
+					</BaseControl>
 				</PanelBody>
 			</InspectorControls>
 			<div
