@@ -145,8 +145,8 @@ export class MapBlock {
      * ) */
     constructor($block, libs) {
         this.$block = $block;
-        this.$wrap = this.$block.lastElementChild;
-        this.$map = this.$wrap.lastElementChild;
+        this.$wrap = this.$block.querySelector(':scope > .map-wrapper');
+        this.$map = this.$wrap.querySelector(':scope > .map');
         this.libs = libs;
         this.listeners = [];
 
@@ -168,7 +168,7 @@ export class MapBlock {
 
         this.#updateBounds();
         this.resizeObserver = new ResizeObserver(this.#updateBounds);
-        this.libs.core.event.addListenerOnce(this.map, "tilesloaded", () => {
+        this.onLoad(() => {
             this.resizeObserver.observe(this.$block);
         });
 
@@ -185,6 +185,13 @@ export class MapBlock {
             background: this.groupPinColor,
             glyphColor: this.groupPinBorderColor,
         })
+    }
+
+    /** @type (fn: () => any) => void */
+    onLoad(fn) {
+        this.listeners.push(
+            this.libs.core.event.addListenerOnce(this.map, "tilesloaded", fn())
+        );
     }
 
     #updateBounds = () => {

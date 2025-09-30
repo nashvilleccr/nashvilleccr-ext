@@ -8,7 +8,9 @@ import {
 	TextControl,
 	ToggleControl,
 	ColorPalette,
+	Icon,
 } from '@wordpress/components';
+import { dragHandle } from '@wordpress/icons';
 
 export default function Edit({ attributes, setAttributes, clientId }) {
 	const {
@@ -80,14 +82,29 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 		groupPinBorderColor,
 	]);
 
-	const blockProps = {
+	const blockProps = useBlockProps({
 		"data-map-id": mapId,
 		"data-event-pin-color": eventPinColor,
 		"data-event-pin-border-color": eventPinBorderColor,
 		"data-group-pin-color": groupPinColor,
 		"data-group-pin-border-color": groupPinBorderColor,
 		"data-preload": preloadData ? data : null,
-	};
+	});
+
+	const dragProps = {
+		style: {
+			background: "var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9))",
+			color: "var(--wp-components-color-accent-inverted, #fff)",
+			fill: "var(--wp-components-color-accent-inverted, #fff)",
+			width: "100%",
+			height: "28px",
+			display: "flex",
+			alignItems: "center",
+			padding: "0 2px",
+			cursor: "move",
+			borderRadius: "5px 5px 0 0",
+		}
+	}
 
 	return (
 		<>
@@ -150,12 +167,12 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 					</BaseControl>
 				</PanelBody>
 			</InspectorControls>
-			<div
-				/* ref not passed during render for some reason, so we load it manually above */
-				{...useBlockProps(blockProps)}
-			>
-				<div style={{ "pointer-events": "none" }}>
-					<div style={{ height }}></div>
+			<div {...blockProps}>
+				<div {...dragProps}>
+					<Icon icon={dragHandle} />
+				</div>
+				<div draggable="true" class="map-wrapper">
+					<div class="map" style={{ height }}></div>
 				</div>
 			</div>
 		</>

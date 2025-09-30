@@ -16,7 +16,7 @@ if ($attributes['preloadData']) {
 
 ?>
 <div <?= get_block_wrapper_attributes($attrs) ?>>
-    <div>
-        <div style="height: <?= $attributes['height'] ?>;"></div>
+    <div class="map-wrapper">
+        <div class="map" style="height: <?= $attributes['height'] ?>;"></div>
     </div>
 </div>
