@@ -1,3 +1,3 @@
-import { MapBlock } from './map';
+import { NccrMapElement } from './map';
 
-MapBlock.loadAll();
+NccrMapElement.load(globalThis.GOOGLE_API_KEY);

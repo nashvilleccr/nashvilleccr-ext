@@ -1,7 +1,6 @@
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
 import { useEffect, useRef, useState } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
-import { MapBlock } from './map';
 import {
 	BaseControl,
 	PanelBody,
@@ -12,9 +11,9 @@ import {
 } from '@wordpress/components';
 import { dragHandle } from '@wordpress/icons';
 
-export default function Edit({ attributes, setAttributes, clientId }) {
+export default function Edit({ attributes, setAttributes }) {
 	const {
-		preloadData,
+		preload,
 		height,
 		mapId,
 		eventPinColor,
@@ -23,37 +22,21 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 		groupPinBorderColor,
 	} = attributes;
 
+	/** @type React.MutableRefObject<NccrMapElement> */
 	const ref = useRef(null);
-	const loadedPreloadData = useRef(false);
 	const [data, setData] = useState(null);
 
 	useEffect(() => {
-		// only run once (react strict mode)
-		if (ref.current) {
-			return;
-		}
+		// inject scripts into iframe
+		const { ownerDocument } = ref.current;
 
-		// load the ref
-		const iframe = document.querySelector('iframe[name="editor-canvas"]');
-		ref.current = iframe.contentDocument.getElementById(`block-${clientId}`);
+		const $apiKeyScript = ownerDocument.createElement("script");
+		$apiKeyScript.innerText = `globalThis.GOOGLE_API_KEY = "${globalThis.GOOGLE_API_KEY}";`
+		ownerDocument.body.appendChild($apiKeyScript);
 
-		// load google maps
-		if (!MapBlock.hasApiKey) {
-			apiFetch({
-				method: 'GET',
-				path: '/nashvilleccr/v1/meta/option?key=google_api_key&type=string',
-			}).then((apiKey) => {
-				MapBlock.setApiKey(apiKey);
-			});
-		}
-	}, []);
-
-	useEffect(() => {
-		if (!preloadData || loadedPreloadData.current) {
-			return;
-		}
-
-		loadedPreloadData.current = true;
+		const $viewScript = ownerDocument.createElement("script");
+		$viewScript.setAttribute("src", globalThis.NCCR_LOAD_MAP_SCRIPT);
+		ownerDocument.body.appendChild($viewScript);
 
 		// load the map data
 		apiFetch({
@@ -62,34 +45,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 		}).then((data) => {
 			setData(JSON.stringify(data));
 		})
-	}, [preloadData]);
-
-	useEffect(() => {
-		if (preloadData && !data) {
-			return;
-		}
-
-		// initialize the div
-		const map = MapBlock.load(ref.current);
-
-		return () => map.then((m) => m.unload());
-	}, [
-		preloadData,
-		data,
-		eventPinColor,
-		eventPinBorderColor,
-		groupPinColor,
-		groupPinBorderColor,
-	]);
-
-	const blockProps = useBlockProps({
-		"data-map-id": mapId,
-		"data-event-pin-color": eventPinColor,
-		"data-event-pin-border-color": eventPinBorderColor,
-		"data-group-pin-color": groupPinColor,
-		"data-group-pin-border-color": groupPinBorderColor,
-		"data-preload": preloadData ? data : null,
-	});
+	}, []);
 
 	const dragProps = {
 		style: {
@@ -114,8 +70,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 						<BaseControl.VisualLabel>Preload Data</BaseControl.VisualLabel>
 						<ToggleControl
 							label="Preload Data"
-							checked={preloadData}
-							onChange={(preloadData) => setAttributes({ preloadData })}
+							checked={preload}
+							onChange={(preload) => setAttributes({ preload })}
 						/>
 					</BaseControl>
 
@@ -167,12 +123,21 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 					</BaseControl>
 				</PanelBody>
 			</InspectorControls>
-			<div {...blockProps}>
+			<div {...useBlockProps()}>
 				<div {...dragProps}>
 					<Icon icon={dragHandle} />
 				</div>
-				<div draggable="true" class="map-wrapper">
-					<div class="map" style={{ height }}></div>
+				<div draggable="true">
+					<nccr-map
+						ref={ref}
+						map-id={mapId}
+						height={height}
+						event-pin-color={eventPinColor}
+						event-pin-border-color={eventPinBorderColor}
+						group-pin-color={groupPinColor}
+						group-pin-border-color={groupPinBorderColor}
+						preload={preload ? data : null}
+					></nccr-map>
 				</div>
 			</div>
 		</>

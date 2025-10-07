@@ -1,4 +1,5 @@
 import { Loader } from '@googlemaps/js-api-loader';
+import block from "./block.json";
 
 /**
  * @typedef {{
@@ -57,28 +58,25 @@ import { Loader } from '@googlemaps/js-api-loader';
 
 /**
  * @typedef {{
- *   events: { [id: number]: google.maps.AdvancedMarkerElement },
- *   groups: { [id: number]: google.maps.AdvancedMarkerElement },
+ *   events: { [id: number]: google.maps.marker.AdvancedMarkerElement },
+ *   groups: { [id: number]: google.maps.marker.AdvancedMarkerElement },
  * }} markers
  */
 
-export class MapBlock {
-    static hasApiKey = false;
+export class NccrMapElement extends HTMLElement {
+    static loaded = false;
 
     /** @type (apiKey: string | PromiseLike<string>) => void */
-    static setApiKey;
+    static load;
 
     /** @type Promise<string> */
     static #apiKey = new Promise((resolve) => {
-        this.setApiKey = (apiKey) => {
-            this.hasApiKey = true;
+        this.load = (apiKey) => {
+            this.loaded = true;
+            customElements.define('nccr-map', this);
             resolve(apiKey);
         };
-
-        if (globalThis.GOOGLE_API_KEY) {
-            this.setApiKey(globalThis.GOOGLE_API_KEY);
-        }
-    })
+    });
 
     static #loader = this.#apiKey.then((apiKey) => new Loader({
         apiKey,
@@ -86,9 +84,12 @@ export class MapBlock {
         libraries: ["maps", "marker"],
     }));
 
-    static #core = this.#loader.then((loader) => loader.importLibrary("core"));
-    static #maps = this.#loader.then((loader) => loader.importLibrary("maps"));
-    static #marker = this.#loader.then((loader) => loader.importLibrary("marker"));
+    /** @type Promise<libs> */
+    static #libs = Promise.all([
+        this.#loader.then((loader) => loader.importLibrary("core")),
+        this.#loader.then((loader) => loader.importLibrary("maps")),
+        this.#loader.then((loader) => loader.importLibrary("marker")),
+    ]).then(([core, maps, marker]) => ({ core, maps, marker }));
 
     static #TENNESSEE_CENTER = {
         lat: 35.88,
@@ -102,104 +103,199 @@ export class MapBlock {
         "east": -82.36999023437498
     };
 
-    static #TENNESSEE_ZOOM = 6.678071905112187;
+    static #TENNESSEE_ZOOM = 6;
 
-    /** @type ($block: HTMLDivElement) => Promise<MapBlock> */
-    static async load($block) {
-        const [core, maps, marker] = await Promise.all([
-            this.#core,
-            this.#maps,
-            this.#marker
-        ]);
+    static observedAttributes = [
+        "preload",
+        "height",
+        "map-id",
+        "event-pin-color",
+        "event-pin-border-color",
+        "group-pin-color",
+        "group-pin-border-color",
+    ];
 
-        return new MapBlock($block, { core, maps, marker });
-    }
+    /** @type boolean */ loaded = false;
+    /** @type markers */ markers = { events: {}, groups: {} };
 
-    /** @type (query?: string) => Promise<MapBlock[]> */
-    static async loadAll(query = ".wp-block-nashvilleccr-map") {
-        const $blocks = document.querySelectorAll(query);
-        return Promise.all([...$blocks].map(($block) => this.load($block)));
-    }
-
-    /** @type HTMLDivElement */ $block;
-    /** @type HTMLDivElement */ $wrap;
-    /** @type HTMLDivElement */ $map;
+    /** @type (reason?: any) => void */ #cancelLoad;
+    /** @type Promise<libs> */ $libs;
     /** @type libs */ libs;
-    /** @type google.maps.MapsEventListener[] */ listeners;
+    /** @type google.maps.MapElement */ $map;
+    /** @type google.maps.Map */ map;
     /** @type data */ data;
+    /** @type google.maps.InfoWindow */ infoWindow;
+    /** @type ResizeObserver */ resizeObserver;
+    /** @type string */ height;
     /** @type string */ mapId;
     /** @type string */ eventPinColor;
     /** @type string */ eventPinBorderColor;
     /** @type string */ groupPinColor;
     /** @type string */ groupPinBorderColor;
-    /** @type google.maps.Map */ map;
-    /** @type ResizeObserver */ resizeObserver;
-    /** @type google.maps.InfoWindow */ infoWindow;
-    /** @type markers */ markers;
 
-    /**
-     * @type (
-     *   div: HTMLDivElement,
-     *   mapId: string,
-     *   libs: libs,
-     * ) */
-    constructor($block, libs) {
-        this.$block = $block;
-        this.$wrap = this.$block.querySelector(':scope > .map-wrapper');
-        this.$map = this.$wrap.querySelector(':scope > .map');
-        this.libs = libs;
-        this.listeners = [];
+    constructor() {
+        super();
+    }
 
-        this.data = this.#loadDataRefs(JSON.parse($block.getAttribute("data-preload")));
-        this.mapId = $block.getAttribute("data-map-id");
-        this.eventPinColor = $block.getAttribute("data-event-pin-color");
-        this.eventPinBorderColor = $block.getAttribute("data-event-pin-border-color");
-        this.groupPinColor = $block.getAttribute("data-group-pin-color");
-        this.groupPinBorderColor = $block.getAttribute("data-group-pin-border-color");
+    async connectedCallback() {
+        const $libs = new Promise((resolve, cancel) => {
+            this.#cancelLoad = cancel;
+            resolve(NccrMapElement.#libs);
+        });
 
-        this.map = new this.libs.maps.Map(this.$map, {
+        this.libs = await $libs;
+        this.loaded = true;
+
+        if (!this.$map) {
+            this.#loadMap();
+        }
+    }
+
+    disconnectedCallback() {
+        this.#cancelLoad();
+        this.loaded = false;
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (!this.loaded || oldValue === newValue) {
+            return;
+        }
+
+        switch (name) {
+            case "map-id":
+                this.$map.remove();
+                this.resizeObserver.disconnect();
+                this.#loadMap();
+                break;
+            case "preload":
+                for (const { marker } of this.#markerIter('events')) {
+                    marker.map = null;
+                }
+                for (const { marker } of this.#markerIter('groups')) {
+                    marker.map = null;
+                }
+                this.markers = { events: {}, groups: {} };
+                this.#loadMarkers();
+                break;
+            case "height":
+                this.$map.style.height = newValue;
+                this.libs.core.event.trigger(this.map, 'resize');
+                break;
+            case "event-pin-color":
+                for (const { pin } of this.#markerIter('events')) {
+                    pin.background = this.eventPinColor;
+                }
+                break;
+            case "event-pin-border-color":
+                for (const { pin } of this.#markerIter('events')) {
+                    pin.borderColor = this.eventPinBorderColor;
+                    pin.glyphColor = this.eventPinBorderColor;
+                }
+                break;
+            case "group-pin-color":
+                for (const { pin } of this.#markerIter('groups')) {
+                    pin.background = this.groupPinColor;
+                }
+                break;
+            case "group-pin-border-color":
+                for (const { pin } of this.#markerIter('groups')) {
+                    pin.borderColor = this.groupPinBorderColor;
+                    pin.glyphColor = this.groupPinBorderColor;
+                }
+                break;
+        }
+    }
+
+    #loadMap() {
+        this.mapId = this.getAttribute("map-id") ?? block.attributes.mapId.default;
+        this.height = this.getAttribute("height") ?? block.attributes.height.default;
+
+        this.$map = document.createElement("gmp-map");
+        this.$map.style.width = "100%";
+        this.$map.style.height = this.height;
+
+        this.map = this.$map.innerMap;
+        this.map.setOptions({
             mapId: this.mapId,
-            center: MapBlock.#TENNESSEE_CENTER,
-            zoom: MapBlock.#TENNESSEE_ZOOM,
+            center: NccrMapElement.#TENNESSEE_CENTER,
+            zoom: NccrMapElement.#TENNESSEE_ZOOM,
             mapTypeControl: false,
             gestureHandling: 'cooperative',
             renderingType: this.libs.maps.RenderingType.VECTOR,
         });
 
-        this.#updateBounds();
+        this.infoWindow = new this.libs.maps.InfoWindow();
         this.resizeObserver = new ResizeObserver(this.#updateBounds);
-        this.onLoad(() => {
-            this.resizeObserver.observe(this.$block);
+
+        this.libs.core.event.addListenerOnce(this.map, "tilesloaded", () => {
+            this.resizeObserver.observe(this.$map);
+            setTimeout(() => this.#loadMarkers());
         });
 
-        this.infoWindow = new this.libs.maps.InfoWindow();
-
-        this.markers = { events: {}, groups: {} };
-        this.#addMarkers(this.data.events, this.markers.events, {
-            borderColor: this.eventPinBorderColor,
-            background: this.eventPinColor,
-            glyphColor: this.eventPinBorderColor,
-        })
-        this.#addMarkers(this.data.groups, this.markers.groups, {
-            borderColor: this.groupPinBorderColor,
-            background: this.groupPinColor,
-            glyphColor: this.groupPinBorderColor,
-        })
+        this.appendChild(this.$map);
     }
 
-    /** @type (fn: () => any) => void */
-    onLoad(fn) {
-        this.listeners.push(
-            this.libs.core.event.addListenerOnce(this.map, "tilesloaded", fn())
-        );
+    #loadMarkers() {
+        this.data = this.#getDataWithRefs();
+        this.eventPinColor = this.getAttribute('event-pin-color')
+            ?? block.attributes.eventPinColor.default;
+        this.eventPinBorderColor = this.getAttribute('event-pin-border-color')
+            ?? block.attributes.eventPinBorderColor.default;
+        this.groupPinColor = this.getAttribute('group-pin-color')
+            ?? block.attributes.groupPinColor.default;
+        this.groupPinBorderColor = this.getAttribute('group-pin-border-color')
+            ?? block.attributes.groupPinBorderColor.default;
+
+        const pinOptsMap = {
+            events:  {
+                borderColor: this.eventPinBorderColor,
+                background: this.eventPinColor,
+                glyphColor: this.eventPinBorderColor,
+            },
+            groups:  {
+                borderColor: this.groupPinBorderColor,
+                background: this.groupPinColor,
+                glyphColor: this.groupPinBorderColor,
+            },
+        }
+
+        for (const [key, pinOpts] of Object.entries(pinOptsMap)) {
+            for (const [id, data] of Object.entries(this.data[key])) {
+                /** @type eventData | groupData */
+                const { title, $location } = data;
+                const { lat, lng } = $location;
+
+                const pin = new this.libs.marker.PinElement(pinOpts);
+
+                const marker = new this.libs.marker.AdvancedMarkerElement({
+                    map: this.map,
+                    title,
+                    position: { lat, lng },
+                    content: pin.element,
+                    gmpClickable: true,
+                });
+
+                this.$map.appendChild(marker);
+
+                marker.addListener("click", () => {
+                    this.infoWindow.close();
+                    this.infoWindow.setContent(title);
+                    this.infoWindow.open(this.map, marker);
+                });
+
+                this.markers[key][id] = marker;
+            }
+        }
     }
 
     #updateBounds = () => {
-        this.map.fitBounds(MapBlock.#TENNESSEE_BOUNDS);
+        this.map.fitBounds(NccrMapElement.#TENNESSEE_BOUNDS);
     };
 
-    /** @type (data: data) => data */
-    #loadDataRefs(data) {
+    /** @type () => data */
+    #getDataWithRefs() {
+        const data = JSON.parse(this.getAttribute("preload"));
+
         if (data === null) {
             return { events: {}, groups: {}, contacts: {}, locations: {} };
         }
@@ -219,38 +315,17 @@ export class MapBlock {
 
     /**
      * @type (
-     *   from: { [id: number]: eventData | groupData },
-     *   to: { [id: number]: google.maps.AdvancedMarkerElement },
-     *   pinOpts: google.maps.marker.PinElementOptions,
-     * ) => void */
-    #addMarkers(from, to, pinOpts) {
-        for (const [id, data] of Object.entries(from)) {
-            const { title, $location } = data;
-            const { lat, lng } = $location;
-
-            const pin = new this.libs.marker.PinElement(pinOpts);
-
-            const marker = new this.libs.marker.AdvancedMarkerElement({
-                map: this.map,
-                title,
-                position: { lat, lng },
-                content: pin.element,
-                gmpClickable: true,
-            });
-
-            this.listeners.push(marker.addListener("click", () => {
-                this.infoWindow.close();
-                this.infoWindow.setContent(title);
-                this.infoWindow.open(this.map, marker);
-            }));
-
-            to[id] = marker;
+     *   src: "events" | "groups"
+     * ) => Generator<{
+     *   id: string,
+     *   marker: google.maps.marker.AdvancedMarkerElement,
+     *   pin: google.maps.marker.PinElement,
+     * }>
+     */
+    *#markerIter(src) {
+        for (const [id, marker] of Object.entries(this.markers[src])) {
+            const pin = marker.content;
+            yield { id, marker, pin };
         }
-    }
-
-    unload() {
-        this.resizeObserver.disconnect();
-        this.listeners.forEach((l) => l.remove());
-        this.$map.textContent = "";
     }
 }

@@ -1,18 +1,36 @@
 <?php namespace NashvilleCCR; defined('ABSPATH') || exit;
 
 class MapBlock {
-    static $loaded_api_key = false;
+    static function load() {
+        add_action('wp_enqueue_scripts', [MapBlock::class, 'update_scripts']);
+        add_action('enqueue_block_editor_assets', [MapBlock::class, 'update_scripts']);
+        add_filter('block_editor_rest_api_preload_paths', [MapBlock::class, 'preload_mapdata'], 10, 2);
+        add_action('rest_api_init', [MapBlock::class, 'rest_api_init']);
+    }
 
-    static function load_api_key() {
-        if (self::$loaded_api_key) {
-            return;
-        }
+    static function update_scripts() {
+        $apiKey = Meta::option("google_api_key", FieldType::String);
+        $asset = require(Plugin::DIR . '/build/blocks/map/view.asset.php');
+        $viewVersion = $asset["version"];
+        $loadMapScript = plugins_url("view.js?ver={$viewVersion}", __FILE__);
 
-        self::$loaded_api_key = true;
+        wp_add_inline_script(
+            'nashvilleccr-map-editor-script',
+            "globalThis.GOOGLE_API_KEY = '{$apiKey}';"
+            . "globalThis.NCCR_LOAD_MAP_SCRIPT = '{$loadMapScript}'",
+            "before"
+        );
 
-        ?><script>
-            globalThis.GOOGLE_API_KEY = "<?= Meta::option("google_api_key", FieldType::String) ?>";
-        </script><?php
+        wp_add_inline_script(
+            'nashvilleccr-map-view-script',
+            "globalThis.GOOGLE_API_KEY = '{$apiKey}';",
+            "before"
+        );
+    }
+
+    static function preload_mapdata($preload_paths, $post) {
+        $preload_paths[] = "/nashvilleccr/v1/mapdata";
+        return $preload_paths;
     }
 
     const SCHEMA = [
@@ -306,4 +324,4 @@ class MapBlock {
     }
 }
 
-add_action('rest_api_init', [MapBlock::class, 'rest_api_init']);
+MapBlock::load();

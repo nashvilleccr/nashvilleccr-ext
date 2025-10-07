@@ -9,7 +9,7 @@
 	"description": "An interactive map for events and groups",
 	"example": {},
 	"attributes": {
-		"preloadData": {
+		"preload": {
 			"type": "boolean",
 			"default": true
 		},

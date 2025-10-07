@@ -9,10 +9,6 @@ enum FieldType {
 class Meta {
     static $options = [];
 
-    static function load() {
-        add_action('rest_api_init', [self::class, 'rest_api_init']);
-    }
-
     static function option($key, FieldType $type = FieldType::Bool) {
         if (isset(self::$options[$key])) {
             return self::$options[$key];
@@ -44,65 +40,5 @@ class Meta {
     static function set_option($key, $value) {
         self::$options[$key] = $value;
         update_field($key, $value, 'option');
-    }
-
-    static function to_field_type(string $str) {
-        switch(strtolower($str)) {
-            case "bool":
-                return FieldType::Bool;
-            case "string":
-                return FieldType::String;
-            case "int":
-                return FieldType::Int;
-            default:
-                return null;
-        }
-    }
-
-    static function rest_api_init() {
-        register_rest_route('nashvilleccr/v1', '/meta/option', [
-            'methods' => 'GET',
-            'callback' => [self::class, 'get_option'],
-            'permission_callback' => [self::class, 'option_permissions'],
-        ]);
-    }
-
-    static function get_option(\WP_REST_Request $request) {
-        $key = $request->get_param("key");
-
-        if (is_null($key)) {
-            return new \WP_Error(
-                'missing_key',
-                "Must include a 'key' value",
-                ['status' => 400]
-            );
-        }
-
-        $type = $request->get_param("type") ?? "bool";
-        $field_type = self::to_field_type($type);
-
-        if (is_null($field_type)) {
-            return new \WP_Error(
-                'invalid_type',
-                "Invalid 'type' value: {$type}",
-                ['status' => 400]
-            );
-        }
-
-        return new \WP_REST_Response(
-            Meta::option($key, $field_type)
-        );
-    }
-
-    static function option_permissions(\WP_REST_Request $request) {
-        if (!is_user_logged_in()) {
-            return new \WP_Error(
-                'rest_forbidden',
-                'Must be logged in to use this endpoint',
-                ['status' => 401]
-            );
-        }
-
-        return true;
     }
 }

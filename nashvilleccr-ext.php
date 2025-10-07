@@ -27,7 +27,6 @@ class Plugin {
 		}
 
 		GoogleMapsSCF::load();
-		Meta::load();
 		Performance::load();
 		RegisterBlocks::load();
 		RegisterFields::load();
