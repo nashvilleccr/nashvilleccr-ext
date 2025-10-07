@@ -77,6 +77,13 @@ export default function Edit({ attributes, setAttributes }) {
 
 					<TextControl
 						__nextHasNoMarginBottom
+						label="Map ID"
+						value={mapId}
+						onChange={(mapId) => setAttributes({ mapId })}
+					/>
+
+					<TextControl
+						__nextHasNoMarginBottom
 						label="Height"
 						value={height}
 						onChange={(height) => setAttributes({ height })}
@@ -93,9 +100,8 @@ export default function Edit({ attributes, setAttributes }) {
 					</BaseControl>
 
 					<BaseControl __nextHasNoMarginBottom>
-						<BaseControl.VisualLabel>Event Pin Color</BaseControl.VisualLabel>
+						<BaseControl.VisualLabel>Event Pin Border Color</BaseControl.VisualLabel>
 						<ColorPalette
-							label="Event Pin Border Color"
 							value={eventPinBorderColor}
 							clearable={false}
 							onChange={(eventPinBorderColor) => setAttributes ({ eventPinBorderColor })}
@@ -103,9 +109,8 @@ export default function Edit({ attributes, setAttributes }) {
 					</BaseControl>
 
 					<BaseControl __nextHasNoMarginBottom>
-						<BaseControl.VisualLabel>Event Pin Color</BaseControl.VisualLabel>
+						<BaseControl.VisualLabel>Group Pin Color</BaseControl.VisualLabel>
 						<ColorPalette
-							label="Group Pin Color"
 							value={groupPinColor}
 							clearable={false}
 							onChange={(groupPinColor) => setAttributes ({ groupPinColor })}
@@ -113,9 +118,8 @@ export default function Edit({ attributes, setAttributes }) {
 					</BaseControl>
 
 					<BaseControl __nextHasNoMarginBottom>
-						<BaseControl.VisualLabel>Event Pin Color</BaseControl.VisualLabel>
+						<BaseControl.VisualLabel>Group Pin Pin Color</BaseControl.VisualLabel>
 						<ColorPalette
-							label="Group Pin Border Color"
 							value={groupPinBorderColor}
 							clearable={false}
 							onChange={(groupPinBorderColor) => setAttributes ({ groupPinBorderColor })}

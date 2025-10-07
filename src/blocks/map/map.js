@@ -58,8 +58,18 @@ import block from "./block.json";
 
 /**
  * @typedef {{
- *   events: { [id: number]: google.maps.marker.AdvancedMarkerElement },
- *   groups: { [id: number]: google.maps.marker.AdvancedMarkerElement },
+ *   events: {
+ *     [id: number]: {
+ *       pin: google.maps.marker.PinElement,
+ *       marker: google.maps.marker.AdvancedMarkerElement,
+ *     }
+ *   },
+ *   groups: {
+ *     [id: number]: {
+ *       pin: google.maps.marker.PinElement,
+ *       marker: google.maps.marker.AdvancedMarkerElement,
+ *     }
+ *   },
  * }} markers
  */
 
@@ -183,22 +193,26 @@ export class NccrMapElement extends HTMLElement {
                 break;
             case "event-pin-color":
                 for (const { pin } of this.#markerIter('events')) {
+                    this.eventPinColor = newValue;
                     pin.background = this.eventPinColor;
                 }
                 break;
             case "event-pin-border-color":
                 for (const { pin } of this.#markerIter('events')) {
+                    this.eventPinBorderColor = newValue;
                     pin.borderColor = this.eventPinBorderColor;
                     pin.glyphColor = this.eventPinBorderColor;
                 }
                 break;
             case "group-pin-color":
                 for (const { pin } of this.#markerIter('groups')) {
+                    this.groupPinColor = newValue;
                     pin.background = this.groupPinColor;
                 }
                 break;
             case "group-pin-border-color":
                 for (const { pin } of this.#markerIter('groups')) {
+                    this.groupPinBorderColor = newValue;
                     pin.borderColor = this.groupPinBorderColor;
                     pin.glyphColor = this.groupPinBorderColor;
                 }
@@ -283,7 +297,7 @@ export class NccrMapElement extends HTMLElement {
                     this.infoWindow.open(this.map, marker);
                 });
 
-                this.markers[key][id] = marker;
+                this.markers[key][id] = { pin, marker };
             }
         }
     }
@@ -323,8 +337,8 @@ export class NccrMapElement extends HTMLElement {
      * }>
      */
     *#markerIter(src) {
-        for (const [id, marker] of Object.entries(this.markers[src])) {
-            const pin = marker.content;
+        for (const [id, obj] of Object.entries(this.markers[src])) {
+            const { pin, marker } = obj;
             yield { id, marker, pin };
         }
     }
