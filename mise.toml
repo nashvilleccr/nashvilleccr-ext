@@ -4,6 +4,7 @@ node = "22"
 
 [env]
 _.path = ["./node_modules/.bin"]
+wp_script_flags = "--experimental-modules --webpack-copy-php --blocks-manifest"
 
 [tasks.install-deps]
 depends = ["install-js-deps", "install-php-deps"]
@@ -68,11 +69,11 @@ pnpx @wordpress/create-block@latest \
 
 [tasks.scripts-build]
 depends = ["install-deps", "clean-build"]
-run = "wp-scripts build --webpack-copy-php --blocks-manifest"
+run = "wp-scripts build ${wp_script_flags}"
 
 [tasks.scripts-start]
 depends = ["install-deps", "clean-build"]
-run = "wp-scripts start --webpack-copy-php --blocks-manifest"
+run = "wp-scripts start ${wp_script_flags}"
 
 [tasks.env-start]
 run = "if [ -z \"$(docker ps -q)\" ]; then wp-env start; fi"
@@ -97,6 +98,7 @@ wp option update options_remove_block_css_globals 1
 wp option update _options_remove_block_css_globals field_68bf2bb601f8a
 wp option update options_disable_classic_theme_css 1
 wp option update _options_disable_classic_theme_css field_68bf2bd201f8b
+wp option update polylang --json '{"force_lang":1,"domains":[],"hide_default":true,"rewrite":true,"redirect_lang":false,"browser":false,"media_support":false,"post_types":[],"taxonomies":[],"sync":[],"default_lang":"en","nav_menus":[],"language_taxonomies":[],"first_activation":1760302027,"previous_version":"","version":"3.7.3"}'
 wp rewrite structure --hard '/%postname%/'
 EOF
 )

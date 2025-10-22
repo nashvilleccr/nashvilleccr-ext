@@ -4,17 +4,23 @@
 	"description": "Plugin to extend the site",
 	"author": "Michael LaCorte",
 	"license": "GPL-2.0-or-later",
+	"imports": {
+		"#nccr/*": "./src/modules/*.js"
+	},
 	"dependencies": {
-		"@googlemaps/js-api-loader": "^1.16.10"
+		"@googlemaps/js-api-loader": "^1.16.10",
+		"@wordpress/interactivity": "^6.33.0"
 	},
 	"devDependencies": {
 		"@types/google.maps": "^3.58.1",
-		"@wordpress/api-fetch": "^7.30.0",
+		"@wordpress/api-fetch": "^7.32.0",
 		"@wordpress/block-editor": "^14.14.6",
 		"@wordpress/components": "^30.4.0",
+		"@wordpress/dependency-extraction-webpack-plugin": "^6.33.0",
 		"@wordpress/element": "^6.19.1",
-		"@wordpress/env": "^10.30.0",
+		"@wordpress/env": "https://gitpkg.vercel.app/nashvilleccr/gutenberg/packages/env?wp-env/https-support-8211",
 		"@wordpress/icons": "^10.31.0",
-		"@wordpress/scripts": "^30.23.0"
+		"@wordpress/scripts": "^30.23.0",
+		"glob": "^11.0.3"
 	}
 }

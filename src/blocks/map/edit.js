@@ -27,17 +27,6 @@ export default function Edit({ attributes, setAttributes }) {
 	const [data, setData] = useState(null);
 
 	useEffect(() => {
-		// inject scripts into iframe
-		const { ownerDocument } = ref.current;
-
-		const $apiKeyScript = ownerDocument.createElement("script");
-		$apiKeyScript.innerText = `globalThis.GOOGLE_API_KEY = "${globalThis.GOOGLE_API_KEY}";`
-		ownerDocument.body.appendChild($apiKeyScript);
-
-		const $viewScript = ownerDocument.createElement("script");
-		$viewScript.setAttribute("src", globalThis.NCCR_LOAD_MAP_SCRIPT);
-		ownerDocument.body.appendChild($viewScript);
-
 		// load the map data
 		apiFetch({
 			method: 'GET',
@@ -147,3 +136,33 @@ export default function Edit({ attributes, setAttributes }) {
 		</>
 	);
 }
+
+// inject scripts into canvas iframe
+window.addEventListener('load', () => {
+	/** @type {HTMLIFrameElement} */
+	const canvas = document.querySelector('iframe[name="editor-canvas"]');
+
+	const parent = {
+		map: document.getElementById('wp-importmap'),
+		view: document.getElementById('nashvilleccr-map-view-script-module-js-module'),
+		data: document.getElementById('wp-script-module-data-nashvilleccr-map-view-script-module'),
+	};
+
+	const map = canvas.contentDocument.createElement('script');
+	map.type = parent.map.type;
+	map.id = parent.map.id;
+	map.innerText = parent.map.innerText;
+	canvas.contentDocument.head.appendChild(map);
+
+	const view = canvas.contentDocument.createElement('script');
+	view.type = parent.view.type;
+	view.src = parent.view.src;
+	view.id = parent.view.id;
+	canvas.contentDocument.head.appendChild(view);
+
+	const data = canvas.contentDocument.createElement('script');
+	data.type = parent.data.type;
+	data.id = parent.data.id;
+	data.innerText = parent.data.innerText;
+	canvas.contentDocument.head.appendChild(data);
+});

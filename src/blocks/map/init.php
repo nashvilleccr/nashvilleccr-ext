@@ -2,29 +2,26 @@
 
 class MapBlock {
     static function load() {
-        add_action('wp_enqueue_scripts', [MapBlock::class, 'update_scripts']);
-        add_action('enqueue_block_editor_assets', [MapBlock::class, 'update_scripts']);
-        add_filter('block_editor_rest_api_preload_paths', [MapBlock::class, 'preload_mapdata'], 10, 2);
-        add_action('rest_api_init', [MapBlock::class, 'rest_api_init']);
+        add_action('enqueue_block_assets', [self::class, 'update_scripts']);
+        add_action('rest_api_init', [self::class, 'rest_api_init']);
+        add_filter('block_editor_rest_api_preload_paths', [self::class, 'preload_mapdata'], 10, 2);
     }
 
     static function update_scripts() {
-        $apiKey = Meta::option("google_api_key", FieldType::String);
-        $asset = require(Plugin::DIR . '/build/blocks/map/view.asset.php');
-        $viewVersion = $asset["version"];
-        $loadMapScript = plugins_url("view.js?ver={$viewVersion}", __FILE__);
+        /**
+         * NOTE: See "Limitations" section:
+         * https://make.wordpress.org/core/2024/03/04/script-modules-in-6-5/
+         * 
+         * TODO: Enqueue this properly as a dependency
+         */
+        wp_enqueue_script("wp-api-fetch");
 
-        wp_add_inline_script(
-            'nashvilleccr-map-editor-script',
-            "globalThis.GOOGLE_API_KEY = '{$apiKey}';"
-            . "globalThis.NCCR_LOAD_MAP_SCRIPT = '{$loadMapScript}'",
-            "before"
-        );
-
-        wp_add_inline_script(
-            'nashvilleccr-map-view-script',
-            "globalThis.GOOGLE_API_KEY = '{$apiKey}';",
-            "before"
+        add_filter(
+            'script_module_data_nashvilleccr-map-view-script-module',
+            function (array $data): array {
+                $data['googleApiKey'] = Meta::option("google_api_key", FieldType::String);
+                return $data;
+            }
         );
     }
 

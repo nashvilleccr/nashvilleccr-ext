@@ -1,10 +1,10 @@
 {
-	"core": "WordPress/WordPress#6.8.2",
+	"core": "WordPress/WordPress#6.8.3",
 	"phpVersion": "8.2",
 	"config": {
 		"DEV": true,
-		"WP_SITEURL": "http://host.docker.internal:8888",
-		"WP_HOME": "http://host.docker.internal:8888",
+		"WP_SITEURL": "http://host.docker.internal",
+		"WP_HOME": "http://host.docker.internal",
 		"WP_DEBUG": true,
 		"WP_DEBUG_DISPLAY": true
 	},
@@ -21,5 +21,5 @@
 		"https://downloads.wordpress.org/plugin/litespeed-cache.zip"
 	],
 	"themes": ["https://downloads.wordpress.org/theme/kadence.zip"],
-	"port": 8888
+	"https": true
 }

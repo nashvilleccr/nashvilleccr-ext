@@ -39,12 +39,13 @@
 		}
 	},
 	"supports": {
-		"html": false
+		"html": false,
+		"interactivity": true
 	},
 	"textdomain": "nccr",
 	"editorScript": "file:./index.js",
 	"style": "file:./style-index.css",
 	"render": "file:./render.php",
-	"viewScript": "file:./view.js",
+	"viewScriptModule": "file:./view.js",
 	"viewStyle": "file:./view.css"
 }

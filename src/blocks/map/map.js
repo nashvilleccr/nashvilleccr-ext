@@ -1,5 +1,6 @@
 import { Loader } from '@googlemaps/js-api-loader';
 import block from "./block.json";
+import { getIpInfo } from '#nccr/ip-api';
 
 /**
  * @typedef {{
@@ -82,8 +83,11 @@ export class NccrMapElement extends HTMLElement {
     /** @type Promise<string> */
     static #apiKey = new Promise((resolve) => {
         this.load = (apiKey) => {
+            globalThis.getIpInfo = getIpInfo;
             this.loaded = true;
-            customElements.define('nccr-map', this);
+            if (!customElements.get('nccr-map')) {
+                customElements.define('nccr-map', this);
+            }
             resolve(apiKey);
         };
     });

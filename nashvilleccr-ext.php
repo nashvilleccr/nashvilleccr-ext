@@ -15,6 +15,7 @@ namespace NashvilleCCR; defined('ABSPATH') || exit;
 
 class Plugin {
 	const DIR = __DIR__;
+	const FILE = __FILE__;
 
 	static function load() {
 		if (!function_exists('get_field')) {
@@ -27,9 +28,11 @@ class Plugin {
 		}
 
 		GoogleMapsSCF::load();
+		IpApi::load();
 		Performance::load();
 		RegisterBlocks::load();
 		RegisterFields::load();
+		RegisterModules::load();
 	}
 
 	static function scf_admin_notice() { ?>
