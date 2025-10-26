@@ -8,14 +8,6 @@ class MapBlock {
     }
 
     static function update_scripts() {
-        /**
-         * NOTE: See "Limitations" section:
-         * https://make.wordpress.org/core/2024/03/04/script-modules-in-6-5/
-         * 
-         * TODO: Enqueue this properly as a dependency
-         */
-        wp_enqueue_script("wp-api-fetch");
-
         add_filter(
             'script_module_data_nashvilleccr-map-view-script-module',
             function (array $data): array {
