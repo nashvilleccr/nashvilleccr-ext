@@ -10,3 +10,5 @@ class GoogleMapsSCF {
         acf_update_setting('google_api_key', $api_key);
     }
 }
+
+return GoogleMapsSCF::class;

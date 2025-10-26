@@ -23,3 +23,5 @@ class RegisterModules {
         }
     }
 }
+
+return RegisterModules::class;

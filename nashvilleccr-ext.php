@@ -24,15 +24,9 @@ class Plugin {
 		}
 
 		foreach (glob(self::DIR . "/includes/php/*.php") as $file) {
-			require $file;
+			$class = require $file;
+			add_action('plugins_loaded', [$class, 'load'], 15);
 		}
-
-		GoogleMapsSCF::load();
-		IpApi::load();
-		Performance::load();
-		RegisterBlocks::load();
-		RegisterFields::load();
-		RegisterModules::load();
 	}
 
 	static function scf_admin_notice() { ?>
@@ -48,4 +42,4 @@ class Plugin {
 	<? }
 }
 
-add_action('plugins_loaded', [Plugin::class, 'load'], 20);
+add_action('plugins_loaded', [Plugin::class, 'load'], 5);

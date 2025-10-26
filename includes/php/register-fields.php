@@ -39,3 +39,5 @@ class RegisterFields {
         return $group;
     }
 }
+
+return RegisterFields::class;

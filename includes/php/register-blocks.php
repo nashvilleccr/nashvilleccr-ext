@@ -42,3 +42,5 @@ class RegisterBlocks {
         return $block_content;
     }
 }
+
+return RegisterBlocks::class;

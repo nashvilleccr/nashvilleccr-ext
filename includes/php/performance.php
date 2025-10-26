@@ -53,3 +53,5 @@ class Performance {
         wp_dequeue_style('classic-theme-styles');
     }
 }
+
+return Performance::class;

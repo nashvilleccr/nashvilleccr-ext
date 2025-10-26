@@ -112,3 +112,5 @@ class IpApi {
         return new \WP_REST_Response(json_decode($body));
     }
 }
+
+return IpApi::class;
