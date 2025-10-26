@@ -87,7 +87,7 @@ const createStoragePromise = (storage) =>
             return false;
         };
 
-        globalThis.navigator.locks.request(namespace, async () => {
+        window.navigator.locks.request(namespace, async () => {
             if (loadPromise()) {
                 return;
             }
@@ -109,5 +109,5 @@ const createStoragePromise = (storage) =>
         return promise;
     };
 
-export const createLocalPromise = createStoragePromise(globalThis.localStorage);
-export const createSessionPromise = createStoragePromise(globalThis.sessionStorage);
+export const createLocalPromise = createStoragePromise(window.localStorage);
+export const createSessionPromise = createStoragePromise(window.sessionStorage);

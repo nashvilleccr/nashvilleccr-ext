@@ -83,7 +83,7 @@ export class NccrMapElement extends HTMLElement {
     /** @type Promise<string> */
     static #apiKey = new Promise((resolve) => {
         this.load = (apiKey) => {
-            globalThis.getIpInfo = getIpInfo;
+            window.getIpInfo = getIpInfo;
             this.loaded = true;
             if (!customElements.get('nccr-map')) {
                 customElements.define('nccr-map', this);

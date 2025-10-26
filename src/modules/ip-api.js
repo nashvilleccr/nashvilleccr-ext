@@ -2,7 +2,7 @@ import { createSessionPromise } from "#nccr/storage-promise";
 import { sleep } from "#nccr/util";
 
 /** @type {{ apiFetch: import("@wordpress/api-fetch").default }} */
-const { apiFetch } = globalThis.wp;
+const { apiFetch } = top.wp;
 
 /**
  * @typedef {{
