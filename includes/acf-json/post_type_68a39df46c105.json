@@ -59,7 +59,7 @@
     "menu_position": 30,
     "menu_icon": {
         "type": "dashicons",
-        "value": "dashicons-info"
+        "value": "dashicons-phone"
     },
     "rename_capabilities": false,
     "singular_capability_name": "post",
