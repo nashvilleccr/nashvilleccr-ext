@@ -14,6 +14,7 @@ class LanguageSwitcher {
         'es' => [
             '%en%' => 'inglés',
             '%es%' => 'español',
+            '%title%' => '¿Cambiar al %to%?',
             '%message%' => 'La página actual está escrita en %from%, pero el idioma solicitado por su navegador es el %to%. ¿Desea cambiar al %to%?',
             '%persist%' => 'No vuelvas a preguntar',
             '%yes%' => 'Sí',
