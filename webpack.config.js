@@ -12,7 +12,7 @@ const sharedModuleConfig = {
     entry: (() => {
         const res = {};
 
-        for (const path of glob.sync('src/modules/*.js')) {
+        for (const path of glob.sync('src/js/*.js')) {
             const name = path.slice(4, -3); // trim "src/" and ".js"
             res[name] = `./${path}`;
         }

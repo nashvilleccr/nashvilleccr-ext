@@ -40,3 +40,6 @@ vendor/
 
 # WordPress export
 imports.xml
+
+# Symlinked translations
+languages/nccr-*_*.mo

@@ -3,7 +3,7 @@ php = "8.2"
 node = "22"
 
 [env]
-_.path = ["./node_modules/.bin"]
+_.path = ["./node_modules/.bin", "./vendor/bin"]
 wp_script_flags = "--experimental-modules --webpack-copy-php --blocks-manifest"
 
 [tasks.install-deps]
@@ -54,7 +54,7 @@ depends = ["install-deps"]
 run = "wp-scripts packages-update"
 
 [tasks.build-zip]
-depends = ["build"]
+depends = ["build", "clean-mo"]
 run = "wp-scripts plugin-zip"
 
 [tasks.create-block]
@@ -114,6 +114,9 @@ run = "wp-env start --update"
 [tasks.env-stop]
 run = "wp-env stop"
 
+[tasks.clean-mo]
+run = "rm -f languages/nccr-*_*.mo"
+
 [tasks.clean-build]
 run = "rm -rf build"
 
@@ -141,3 +144,12 @@ run = "scp nashvilleccr-ext.zip ${SSH_USER}@${SSH_HOST}:${REMOTE_TMP_DIR}/"
 [tasks.repl]
 depends = ["env-start"]
 run = "wp-env run cli bash"
+
+[tasks.make-pot]
+run = """wp i18n make-pot \
+    . \
+    languages/nccr.pot \
+    --slug=nashvilleccr-ext \
+    --domain=nccr \
+    --exclude=.git,.vscode,build,node_modules,vendor
+"""

@@ -2,13 +2,14 @@
 	"name": "nashvilleccr-ext",
 	"version": "0.1.0",
 	"description": "Plugin to extend the site",
-	"author": "Michael LaCorte",
+	"author": "Nashville CCR",
 	"license": "GPL-2.0-or-later",
 	"imports": {
-		"#nccr/*": "./src/modules/*.js"
+		"#nccr/*": "./src/js/*.js"
 	},
 	"dependencies": {
 		"@googlemaps/js-api-loader": "^1.16.10",
+		"@wordpress/i18n": "^6.6.0",
 		"@wordpress/interactivity": "^6.33.0"
 	},
 	"devDependencies": {
