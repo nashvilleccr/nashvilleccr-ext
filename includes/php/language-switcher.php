@@ -30,6 +30,11 @@ class LanguageSwitcher {
     static function default_translations() {
         foreach (self::DEFAULTS as $slug => $defaults) {
             $term = get_term_by('slug', $slug, 'language');
+
+            if (!$term) {
+                continue; // do nothing if 'en' or 'es' not set
+            }
+
             $res = get_term_meta($term->term_id, '_pll_strings_translations', true) ?? [];
             $keyed = [];
             $updated = false;
