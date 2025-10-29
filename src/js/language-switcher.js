@@ -1,12 +1,3 @@
-/**
- * @typedef {{
- *   translations: {
- *     [slug: string]: string,
- *   },
- *   current: string,
- * }} langData
- */
-
 export const checkSwitchLanguage = () => {
     const $data = document.getElementById('wp-script-module-data-#nccr/language-switcher');
     /** @type {langData} */
@@ -21,15 +12,37 @@ export const checkSwitchLanguage = () => {
         const url = data.translations[lang];
 
         if (url) {
-            return askSwitchLanguage(data.current, lang, url); // ask to switch
+            return askSwitchLanguage(data, lang); // ask to switch
         }
     }
 
     return; // no supported language
 };
 
-const askSwitchLanguage = (from, to, url) => {
-    console.log({ event: "modal", from, to, url });
+const askSwitchLanguage = (data, lang) => {
+    const to = data.translations[lang];
+
+    const from_lang = to.strings[`%${data.current}%`];
+    const to_lang = to.strings[`%${lang}%`];
+
+    const title = to.strings['%title%']
+        .replaceAll('%to%', to_lang);
+
+    const message = to.strings['%message%']
+        .replaceAll('%from%', `<strong>${from_lang}</strong>`)
+        .replaceAll('%to%', `<strong>${to_lang}</strong>`);
+
+    const persist = to.strings['%persist%'];
+    const yes = to.strings['%yes%'];
+    const no = to.strings['%no%'];
+
+    console.log({
+        title,
+        message,
+        persist,
+        yes,
+        no,
+    });
 }
 
 checkSwitchLanguage();

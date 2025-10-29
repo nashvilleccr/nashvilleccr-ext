@@ -1,6 +1,14 @@
 <?php namespace NashvilleCCR; defined('ABSPATH') || exit;
 
 class LanguageSwitcher {
+    const KEYS = [
+        '%title%',
+        '%message%',
+        '%persist%',
+        '%yes%',
+        '%no%',
+    ];
+
     const DEFAULTS = [
         'en' => [
             '%en%' => 'English',
@@ -101,8 +109,39 @@ class LanguageSwitcher {
             if ($lang['no_translation']) {
                 continue;
             }
+            
+            $strings = [];
 
-            $data['translations'][$slug] = $lang['url'];
+            foreach (self::KEYS as $key) {
+                $translated = pll_translate_string($key, $slug);
+                
+                if ($translated === $key) {
+                    $translated = self::DEFAULTS['en'][$key]; // default to English
+                }
+
+                $strings[$key] = $translated;
+            }
+
+            $data['translations'][$slug] = [
+                'url' => $lang['url'],
+                'defaultName' => $lang['name'],
+                'strings' => $strings,
+            ];
+        }
+
+        foreach ($data['translations'] as $outer => &$lang) {
+            foreach (array_keys($data['translations']) as $inner) {
+                $key = "%{$inner}%";
+                $translated = pll_translate_string($key, $outer);
+
+                if ($translated === $key) {
+                    $translated = $lang['defaultName'];
+                }
+
+                $lang['strings'][$key] = $translated;
+            }
+
+            unset($lang['defaultName']);
         }
 
         return $data;
