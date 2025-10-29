@@ -129,18 +129,20 @@ class LanguageSwitcher {
             ];
         }
 
-        foreach ($data['translations'] as $outer => &$lang) {
-            foreach (array_keys($data['translations']) as $inner) {
+        foreach ($data['translations'] as $outer => &$outer_lang) {
+            foreach ($data['translations'] as $inner => &$inner_lang) {
                 $key = "%{$inner}%";
                 $translated = pll_translate_string($key, $outer);
 
                 if ($translated === $key) {
-                    $translated = $lang['defaultName'];
+                    $translated = $inner_lang['defaultName'];
                 }
 
-                $lang['strings'][$key] = $translated;
+                $outer_lang['strings'][$key] = $translated;
             }
+        }
 
+        foreach ($data['translations'] as $slug => &$lang) {
             unset($lang['defaultName']);
         }
 
