@@ -238,6 +238,8 @@ export class NccrMapElement extends HTMLElement {
             center: NccrMapElement.#TENNESSEE_CENTER,
             zoom: NccrMapElement.#TENNESSEE_ZOOM,
             mapTypeControl: false,
+            tiltInteractionEnabled: false,
+            headingInteractionEnabled: false,
             gestureHandling: 'cooperative',
             renderingType: this.libs.maps.RenderingType.VECTOR,
         });
