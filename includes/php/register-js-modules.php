@@ -21,6 +21,16 @@ class RegisterJsModules {
                 $asset['dependencies'],
                 $asset['version'],
             );
+
+            $css_file = preg_replace('/\.js$/', '.css', $module_file);
+
+            if (file_exists($css_file)) {
+                $css_url = plugins_url("build/js/{$matches[1]}.css", Plugin::FILE);
+                $css_version = filemtime($css_file);
+
+                wp_register_style($module_name, $css_url, [], $css_version);
+                wp_style_add_data($module_name, 'path', $css_file);
+            }
         }
     }
 

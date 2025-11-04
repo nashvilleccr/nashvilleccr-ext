@@ -1,48 +1,82 @@
-export const checkSwitchLanguage = () => {
-    const $data = document.getElementById('wp-script-module-data-#nccr/language-switcher');
-    /** @type {langData} */
-    const data = JSON.parse($data.textContent);
-    const requested = new Set(navigator.languages.map((lang) => lang.split('-')[0]));
+import { store, getElement } from '@wordpress/interactivity';
+import "../css/language-switcher.scss";
 
-    for (const lang of requested) {
-        if (lang === data.current) {
-            return; // already correct
-        }
+const { state, actions } = store("#nccr/language-switcher", {
+    state: {
+        disable: false,
+        strings: {},
+        ref: null,
+        data: {},
+        lang: "",
+        get browserLang() {
+            return state.data.translations[state.lang];
+        },
+    },
+    actions: {
+        checkSwitchLanguage: () => {
+            const requested = new Set(navigator.languages.map((lang) => lang.split('-')[0]));
+            const $data = document.getElementById('wp-script-module-data-#nccr/language-switcher');
+            state.data = JSON.parse($data.textContent);
+            state.ref = getElement().ref;
 
-        const url = data.translations[lang];
+            for (const lang of requested) {
+                if (lang === state.data.current) {
+                    return; // already correct
+                }
 
-        if (url) {
-            return askSwitchLanguage(data, lang); // ask to switch
-        }
+                const url = state.data.translations[lang];
+
+                if (url) {
+                    state.lang = lang;
+                    return actions.trySwitchLanguage(); // try to switch
+                }
+            }
+
+            return; // no supported language
+        },
+        trySwitchLanguage: () => {
+            const disable = window.localStorage.getItem("nccrLanguageSwitcher_disable");
+
+            if (disable) {
+                return;
+            }
+
+            actions.askSwitchLanguage();
+        },
+        askSwitchLanguage: () => {
+            const strings = state.browserLang.strings;
+            const from_lang = strings[`%${state.data.current}%`];
+            const to_lang = strings[`%${state.lang}%`];
+
+            state.strings.title = strings['%title%']
+                .replaceAll('%to%', to_lang);
+
+            state.strings.message = strings['%message%']
+                .replaceAll('%from%', from_lang)
+                .replaceAll('%to%', to_lang);
+
+            state.strings.disable = strings['%disable%'];
+            state.strings.yes = strings['%yes%'];
+            state.strings.no = strings['%no%'];
+
+            state.ref.showModal();
+        },
+        toggleDisable() {
+            state.disable = !state.disable;
+        },
+        yes() {
+            if (state.disable) {
+                window.localStorage.setItem("nccrLanguageSwitcher_disable", "true");
+            }
+
+            window.location.href = state.browserLang.url;
+        },
+        no() {
+            if (state.disable) {
+                window.localStorage.setItem("nccrLanguageSwitcher_disable", "true");
+            }
+
+            state.ref.close();
+        },
     }
-
-    return; // no supported language
-};
-
-const askSwitchLanguage = (data, lang) => {
-    const to = data.translations[lang];
-
-    const from_lang = to.strings[`%${data.current}%`];
-    const to_lang = to.strings[`%${lang}%`];
-
-    const title = to.strings['%title%']
-        .replaceAll('%to%', to_lang);
-
-    const message = to.strings['%message%']
-        .replaceAll('%from%', `<strong>${from_lang}</strong>`)
-        .replaceAll('%to%', `<strong>${to_lang}</strong>`);
-
-    const persist = to.strings['%persist%'];
-    const yes = to.strings['%yes%'];
-    const no = to.strings['%no%'];
-
-    console.log({
-        title,
-        message,
-        persist,
-        yes,
-        no,
-    });
-}
-
-checkSwitchLanguage();
+});

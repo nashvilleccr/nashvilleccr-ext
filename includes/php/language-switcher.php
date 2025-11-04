@@ -4,7 +4,7 @@ class LanguageSwitcher {
     const KEYS = [
         '%title%',
         '%message%',
-        '%persist%',
+        '%disable%',
         '%yes%',
         '%no%',
     ];
@@ -15,7 +15,7 @@ class LanguageSwitcher {
             '%es%' => 'Spanish',
             '%title%' => 'Switch to %to%?',
             '%message%' => 'The current page is written in %from%, but your browser\'s requested language is %to%. Would you like to switch to %to%?',
-            '%persist%' => 'Don\'t ask again',
+            '%disable%' => 'Don\'t ask again',
             '%yes%' => 'Yes',
             '%no%' => 'No',
         ],
@@ -24,7 +24,7 @@ class LanguageSwitcher {
             '%es%' => 'español',
             '%title%' => '¿Cambiar al %to%?',
             '%message%' => 'La página actual está escrita en %from%, pero el idioma solicitado por su navegador es el %to%. ¿Desea cambiar al %to%?',
-            '%persist%' => 'No vuelvas a preguntar',
+            '%disable%' => 'No vuelvas a preguntar',
             '%yes%' => 'Sí',
             '%no%' => 'No',
         ],
@@ -72,7 +72,7 @@ class LanguageSwitcher {
         pll_register_string('spanish', '%es%', 'plugins/nashvilleccr-ext');
         pll_register_string('language-switcher/title', '%title%', 'plugins/nashvilleccr-ext');
         pll_register_string('language-switcher/message', '%message%', 'plugins/nashvilleccr-ext', true);
-        pll_register_string('language-switcher/persist', '%persist%', 'plugins/nashvilleccr-ext');
+        pll_register_string('language-switcher/disable', '%disable%', 'plugins/nashvilleccr-ext');
         pll_register_string('yes', '%yes%', 'plugins/nashvilleccr-ext');
         pll_register_string('no', '%no%', 'plugins/nashvilleccr-ext');
     }
@@ -96,7 +96,65 @@ class LanguageSwitcher {
             'script_module_data_#nccr/language-switcher',
             [self::class, 'add_language_data']
         );
+
+        if (Meta::option('language_switcher_override_defaults')) {
+            wp_deregister_style('#nccr/language-switcher');
+            $styles = Meta::option('language_switcher_css', FieldType::String);
+            wp_register_style('#nccr/language-switcher', false);
+            wp_enqueue_style('#nccr/language-switcher');
+            wp_add_inline_style('#nccr/language-switcher', $styles);
+        } else {
+            wp_enqueue_style('#nccr/language-switcher');
+        }
+
+
+        add_action('wp_footer', [self::class, 'footer']);
     }
+
+    static function footer() {
+        if (Meta::option('language_switcher_override_defaults')) {
+            echo Meta::option('language_switcher_html', FieldType::String);
+        } else {
+            self::footer_default();
+        }
+    }
+
+    static function footer_default() { ?>
+        <dialog
+            class="nccr-language-switcher"
+            data-wp-interactive="#nccr/language-switcher"
+            data-wp-init="actions.checkSwitchLanguage"
+            closedby="any">
+            <form method="dialog">
+                <h2 data-wp-text="state.strings.title"></h2>
+                <p data-wp-text="state.strings.message"></p>
+                <div class="footer">
+                    <label class="disable">
+                        <input
+                            type="checkbox"
+                            name="disable"
+                            value="1"
+                            data-wp-bind--checked="state.disable"
+                            data-wp-on--click="actions.toggleDisable"
+                        >
+                        <span data-wp-text="state.strings.disable"></span>
+                    </label>
+                    <div class="buttons">
+                        <button
+                            type="reset"
+                            data-wp-text="state.strings.no"
+                            data-wp-on--click="actions.no"
+                        ></button>
+                        <button
+                            type="submit"
+                            data-wp-text="state.strings.yes"
+                            data-wp-on--click="actions.yes"
+                        ></button>
+                    </div>
+                </div>
+            </form>
+        </dialog>
+    <?php }
 
     static function add_language_data(array $data): array {
         $data['translations'] = [];
@@ -109,12 +167,12 @@ class LanguageSwitcher {
             if ($lang['no_translation']) {
                 continue;
             }
-            
+
             $strings = [];
 
             foreach (self::KEYS as $key) {
                 $translated = pll_translate_string($key, $slug);
-                
+
                 if ($translated === $key) {
                     $translated = self::DEFAULTS['en'][$key]; // default to English
                 }
